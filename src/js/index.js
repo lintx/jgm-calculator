@@ -34,6 +34,7 @@ import {Buff, BuffRange, Buffs, BuffSource} from "./Buff";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
+let version = "0.4";
 
 let app = new Vue({
     el:"#app",
@@ -49,7 +50,7 @@ let app = new Vue({
         }
 
         let data = {
-            version:"0.3",
+            version:version,
             rarity:BuildingRarity,
             buildings:[
                 {
@@ -99,12 +100,7 @@ let app = new Vue({
                 }
             ],
             buffs:[],
-            programs:{
-                onlineMoney:{},
-                supplyMoney:{},
-                supplyRarity:{},
-                offlineMoney:{}
-            },
+            programs:[],
             progress:0,
             calculationing:false
         };
