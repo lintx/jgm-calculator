@@ -34,7 +34,7 @@ import {Buff, BuffRange, Buffs, BuffSource} from "./Buff";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.4";
+let version = "0.5";
 
 let app = new Vue({
     el:"#app",

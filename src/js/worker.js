@@ -218,7 +218,6 @@ function calculation(list,buff) {
             });
         });
     });
-    console.log(result.supplyMoney.addition);
 
     let arr = [result.onlineMoney.addition];
     if (arr.indexOf(result.supplyMoney.addition)===-1){
