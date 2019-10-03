@@ -7,7 +7,7 @@
 </head>
 <body>
     <div id="app" class="container">
-        <h1 class="mb-4">家国梦计算器 V0.2</h1>
+        <h1 class="mb-4">家国梦计算器 v{{version}}</h1>
         <div>
             <h3 class="mb-3">配置建筑及星级</h3>
             <div class="row mb-5">
@@ -17,14 +17,20 @@
                         <thead>
                         <tr>
                             <th class="text-center">名称</th>
+                            <th class="text-center">禁用</th>
                             <th class="text-center">星级</th>
-<!--                            <th class="text-center">等级</th>-->
+                            <th class="text-center">等级</th>
                             <th class="text-center">任务加成</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr v-for="item in types.list" :class="[{ 'table-primary': item.rarity===rarity.Common }, { 'table-rare': item.rarity===rarity.Rare },{ 'table-warning': item.rarity===rarity.Legendary }]">
                             <td class="text-nowrap text-center">{{item.BuildingName}}</td>
+                            <td class="text-center">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" v-model="item.disabled">
+                                </div>
+                            </td>
                             <td>
                                 <select v-model="item.star" class="form-control form-control-sm">
                                     <option value="0">无</option>
@@ -35,7 +41,9 @@
                                     <option value="5">5</option>
                                 </select>
                             </td>
-<!--                            <td class="text-center"></td>-->
+                            <td class="text-center">
+                                <input v-model="item.level" type="number" min="1" max="2000" step="1" class="form-control text-right form-control-sm calculator-level">
+                            </td>
                             <td>
                                 <div class="input-group input-group-sm">
                                     <input v-model="item.quest" type="number" class="form-control text-right">
@@ -89,24 +97,24 @@
                     <div class="alert alert-info" role="alert">
                         <h4 class="alert-heading">正在计算，请稍候...</h4>
                         <div class="progress">
-                            <div class="progress-bar progress-bar-striped bg-info progress-bar-animated" role="progressbar" :style="{ width:  progress + '%' }"></div>
+                            <div class="progress-bar progress-bar-striped bg-info progress-bar-animated" role="progressbar" :style="{ width:  progress + '%' }">{{progress}}%</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-3" v-if="programs.onlineMoney.online>0">
+                <div class="col-3" v-if="programs.onlineMoney.online">
                     <h5>在线金币优先策略</h5>
                     <table class="table table-bordered table-sm">
                         <thead>
                         <tr>
-                            <th>在线</th>
-                            <th>离线</th>
-                            <th>供货</th>
+                            <th class="text-center">在线</th>
+                            <th class="text-center">离线</th>
+                            <th class="text-center">供货</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr>
-                            <td>{{programs.onlineMoney.online}}/s</td>
-                            <td>{{programs.onlineMoney.offline}}/s</td>
+                            <td>{{programs.onlineMoney.online}}/秒</td>
+                            <td>{{programs.onlineMoney.offline}}/秒</td>
                             <td>{{programs.onlineMoney.supply}}%</td>
                         </tr>
                         </tbody>
@@ -114,34 +122,34 @@
                     <table class="table table-bordered table-sm">
                         <thead>
                         <tr>
-                            <th>建筑</th>
-                            <th>在线</th>
-                            <th>离线</th>
+                            <th class="text-center">建筑</th>
+                            <th class="text-center">在线</th>
+                            <th class="text-center">离线</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr v-for="building in programs.onlineMoney.buildings" :class="[{ 'table-primary': building.building.rarity===rarity.Common }, { 'table-rare': building.building.rarity===rarity.Rare },{ 'table-warning': building.building.rarity===rarity.Legendary }]">
-                            <td>{{building.building.BuildingName}}</td>
-                            <td>{{building.online}}/s</td>
-                            <td>{{building.offline}}/s</td>
+                            <td class="text-nowrap text-center">{{building.building.BuildingName}}</td>
+                            <td>{{building.online}}/秒</td>
+                            <td>{{building.offline}}/秒</td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
-                <div class="col-3" v-if="programs.supplyMoney.online>0">
+                <div class="col-3" v-if="programs.supplyMoney.online">
                     <h5>供货优先、金币次之策略</h5>
                     <table class="table table-bordered table-sm">
                         <thead>
                         <tr>
-                            <th>在线</th>
-                            <th>离线</th>
-                            <th>供货</th>
+                            <th class="text-center">在线</th>
+                            <th class="text-center">离线</th>
+                            <th class="text-center">供货</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr>
-                            <td>{{programs.supplyMoney.online}}/s</td>
-                            <td>{{programs.supplyMoney.offline}}/s</td>
+                            <td>{{programs.supplyMoney.online}}/秒</td>
+                            <td>{{programs.supplyMoney.offline}}/秒</td>
                             <td>{{programs.supplyMoney.supply}}%</td>
                         </tr>
                         </tbody>
@@ -149,34 +157,34 @@
                     <table class="table table-bordered table-sm">
                         <thead>
                         <tr>
-                            <th>建筑</th>
-                            <th>在线</th>
-                            <th>离线</th>
+                            <th class="text-center">建筑</th>
+                            <th class="text-center">在线</th>
+                            <th class="text-center">离线</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr v-for="building in programs.supplyMoney.buildings" :class="[{ 'table-primary': building.building.rarity===rarity.Common }, { 'table-rare': building.building.rarity===rarity.Rare },{ 'table-warning': building.building.rarity===rarity.Legendary }]">
-                            <td>{{building.building.BuildingName}}</td>
-                            <td>{{building.online}}/s</td>
-                            <td>{{building.offline}}/s</td>
+                            <td class="text-nowrap text-center">{{building.building.BuildingName}}</td>
+                            <td>{{building.online}}/秒</td>
+                            <td>{{building.offline}}/秒</td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
-                <div class="col-3" v-if="programs.supplyRarity.online>0">
+                <div class="col-3" v-if="programs.supplyRarity.online">
                     <h5>供货优先、橙色次之策略</h5>
                     <table class="table table-bordered table-sm">
                         <thead>
                         <tr>
-                            <th>在线</th>
-                            <th>离线</th>
-                            <th>供货</th>
+                            <th class="text-center">在线</th>
+                            <th class="text-center">离线</th>
+                            <th class="text-center">供货</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr>
-                            <td>{{programs.supplyRarity.online}}/s</td>
-                            <td>{{programs.supplyRarity.offline}}/s</td>
+                            <td>{{programs.supplyRarity.online}}/秒</td>
+                            <td>{{programs.supplyRarity.offline}}/秒</td>
                             <td>{{programs.supplyRarity.supply}}%</td>
                         </tr>
                         </tbody>
@@ -184,34 +192,34 @@
                     <table class="table table-bordered table-sm">
                         <thead>
                         <tr>
-                            <th>建筑</th>
-                            <th>在线</th>
-                            <th>离线</th>
+                            <th class="text-center">建筑</th>
+                            <th class="text-center">在线</th>
+                            <th class="text-center">离线</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr v-for="building in programs.supplyRarity.buildings" :class="[{ 'table-primary': building.building.rarity===rarity.Common }, { 'table-rare': building.building.rarity===rarity.Rare },{ 'table-warning': building.building.rarity===rarity.Legendary }]">
-                            <td>{{building.building.BuildingName}}</td>
-                            <td>{{building.online}}/s</td>
-                            <td>{{building.offline}}/s</td>
+                            <td class="text-nowrap text-center">{{building.building.BuildingName}}</td>
+                            <td>{{building.online}}/秒</td>
+                            <td>{{building.offline}}/秒</td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
-                <div class="col-3" v-if="programs.offlineMoney.online>0">
+                <div class="col-3" v-if="programs.offlineMoney.online">
                     <h5>离线金币优先策略</h5>
                     <table class="table table-bordered table-sm">
                         <thead>
                         <tr>
-                            <th>在线</th>
-                            <th>离线</th>
-                            <th>供货</th>
+                            <th class="text-center">在线</th>
+                            <th class="text-center">离线</th>
+                            <th class="text-center">供货</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr>
-                            <td>{{programs.offlineMoney.online}}/s</td>
-                            <td>{{programs.offlineMoney.offline}}/s</td>
+                            <td>{{programs.offlineMoney.online}}/秒</td>
+                            <td>{{programs.offlineMoney.offline}}/秒</td>
                             <td>{{programs.offlineMoney.supply}}%</td>
                         </tr>
                         </tbody>
@@ -219,16 +227,16 @@
                     <table class="table table-bordered table-sm">
                         <thead>
                         <tr>
-                            <th>建筑</th>
-                            <th>在线</th>
-                            <th>离线</th>
+                            <th class="text-center">建筑</th>
+                            <th class="text-center">在线</th>
+                            <th class="text-center">离线</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr v-for="building in programs.offlineMoney.buildings" :class="[{ 'table-primary': building.building.rarity===rarity.Common }, { 'table-rare': building.building.rarity===rarity.Rare },{ 'table-warning': building.building.rarity===rarity.Legendary }]">
-                            <td>{{building.building.BuildingName}}</td>
-                            <td>{{building.online}}/s</td>
-                            <td>{{building.offline}}/s</td>
+                            <td class="text-nowrap text-center">{{building.building.BuildingName}}</td>
+                            <td>{{building.online}}/秒</td>
+                            <td>{{building.offline}}/秒</td>
                         </tr>
                         </tbody>
                     </table>

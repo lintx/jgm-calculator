@@ -1,8 +1,11 @@
 import {BuffRange, BuffSource} from "./Buff";
+import {getIncome} from "./Level";
 
 
 class Building{
     constructor(name,rarity,type,baseMoney){
+        this.disabled = false;
+        this.level = 1;
         this.star = 0;
         this.quest = 0;
         this.buffs = [];  //建筑加成
@@ -27,7 +30,7 @@ class Building{
     }
 
     get money(){
-        return this.baseMoney * this.multiple; //这里需要按等级计算，这是基础金钱收益
+        return this.baseMoney * this.multiple * getIncome(this.level); //这里需要按等级计算，这是基础金钱收益
     }
 
     get multiple(){

@@ -49,6 +49,7 @@ let app = new Vue({
         }
 
         let data = {
+            version:"0.3",
             rarity:BuildingRarity,
             buildings:[
                 {
@@ -141,6 +142,8 @@ let app = new Vue({
                                 if (db.BuildingName===item.building){
                                     db.star = item.star;
                                     db.quest = item.quest;
+                                    db.disabled = item.disabled;
+                                    db.level = getValidLevel(item.level);
                                 }
                             });
                         });
@@ -184,11 +187,12 @@ let app = new Vue({
                     list:[]
                 };
                 cls.list.forEach(function (item) {
-                    if (Number(item.star)>0){
+                    if (!item.disabled && Number(item.star)>0){
                         building.list.push({
                             star:Number(item.star),
                             quest:item.quest,
-                            name:item.BuildingName
+                            name:item.BuildingName,
+                            level:getValidLevel(item.level)
                         });
                     }
                 });
@@ -196,7 +200,7 @@ let app = new Vue({
             });
 
             if(typeof(Worker)!=="undefined") {
-                worker = new Worker("static/worker.js?v=0.2");
+                worker = new Worker("static/worker.js?v=" + this.version);
                 let _self = this;
                 worker.onmessage = function(e){
                     let data = e.data;
@@ -232,7 +236,9 @@ let app = new Vue({
                         config.building.push({
                             building:item.BuildingName,
                             star:Number(item.star),
-                            quest:item.quest
+                            quest:item.quest,
+                            disabled:item.disabled,
+                            level:getValidLevel(item.level)
                         });
                     }
                 });
@@ -269,3 +275,21 @@ let app = new Vue({
         }
     }
 });
+
+function getValidLevel(level) {
+    if (typeof level!=="number"){
+        if (isNaN(level)){
+            return 1;
+        }else {
+            level = Number(level);
+        }
+    }
+    level = Math.floor(level);
+    if (level<1){
+        return 1;
+    }
+    if (level>2000){
+        return 2000;
+    }
+    return level;
+}

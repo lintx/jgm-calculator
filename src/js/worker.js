@@ -86,6 +86,7 @@ function calculation(list,buff) {
                         if (item.BuildingName===c.name){
                             item.star = c.star;
                             item.quest = c.quest;
+                            item.level = c.level;
                             p.push(item);
                             return true;
                         }
@@ -168,13 +169,11 @@ function calculation(list,buff) {
                     addition.online += a[BuffRange.Online];
                     addition.offline += a[BuffRange.Offline];
                     addition.buildings.push({
-                        online:Math.round(a[BuffRange.Online]*100),
-                        offline:Math.round(a[BuffRange.Offline]*100),
+                        online:a[BuffRange.Online],
+                        offline:a[BuffRange.Offline],
                         building:t
                     });
                 });
-                addition.online = Math.round(addition.online*100);
-                addition.offline = Math.round(addition.offline*100);
                 addition.supply = Math.round(buffs.supplyBuff*100);
 
                 if (addition.online>result.onlineMoney.money){
@@ -219,6 +218,28 @@ function calculation(list,buff) {
             });
         });
     });
+    console.log(result.supplyMoney.addition);
+
+    let arr = [result.onlineMoney.addition];
+    if (arr.indexOf(result.supplyMoney.addition)===-1){
+        arr.push(result.supplyMoney.addition);
+    }
+    if (arr.indexOf(result.supplyRarity.addition)===-1){
+        arr.push(result.supplyRarity.addition);
+    }
+    if (arr.indexOf(result.offlineMoney.addition)===-1){
+        arr.push(result.offlineMoney.addition);
+    }
+    arr.forEach((addition)=>{
+        addition.online = renderSize(addition.online);
+        addition.offline = renderSize(addition.offline);
+        addition.buildings.forEach((building)=>{
+            building.online = renderSize(building.online);
+            building.offline = renderSize(building.offline);
+        });
+    });
+
+    console.log(result.supplyMoney.addition);
 
     postMessage({
         mode:"result",
@@ -230,6 +251,26 @@ function calculation(list,buff) {
         }
     });
     postMessage("done");
+}
+
+function renderSize(value){
+    if(null===value||value===''){
+        return "0";
+    }
+    let unitArr = ["","K","M","B","T","aa","bb","cc","dd","ee","ff","gg"];
+    let index=0,
+        srcsize = parseFloat(value);
+    index=Math.floor(Math.log(srcsize)/Math.log(1000));
+    let size =srcsize/Math.pow(1000,index);
+    //  保留的小数位数
+    if (size>=100){
+        size = Math.round(size);
+    }else if (size>=10){
+        size = size.toFixed(1);
+    }else {
+        size = size.toFixed(2);
+    }
+    return size+unitArr[index];
 }
 
 function getFlagArrs(m, n) {
