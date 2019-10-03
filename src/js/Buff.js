@@ -13,7 +13,7 @@ let BuffRange = {
     Online:"在线",
     Offline:"离线",
     Supply:"供货",
-    Residence:"住宅",
+    Residence:"住宅建筑",
     Business:"商业建筑",
     Industrial:"工业建筑",
     Targets:"特定建筑物"
@@ -32,13 +32,6 @@ class Buffs {
         this.Policy = []; //政策加成
         this.Photo = []; //游记加成
         this.Quest = []; //任务加成
-    }
-
-    clear(){
-        this.Building = [];
-        this.Policy = [];
-        this.Photo = [];
-        this.Quest = [];
     }
 
     add(source,buff){
@@ -61,40 +54,16 @@ class Buffs {
         this.Quest.push(b);
     }
 
-    clearBuilding() {
-        this.Building = [];
-    }
-
     addBuilding(building){
         building.buffs.forEach((buff)=>{
             this.Building.push(new Buff(buff.range,buff.target,building.getBuffValue(buff)));
         });
     }
 
-    // addBuilding(buff){
-    //
-    //     this.Building.Global += building.buff.Global;
-    //     this.Building.Online += building.buff.Online;
-    //     this.Building.Offline += building.buff.Offline;
-    //     this.Building.Supply += building.buff.Supply;
-    //     this.Building.Residence += building.buff.Residence;
-    //     this.Building.Business += building.buff.Business;
-    //     this.Building.Industrial += building.buff.Industrial;
-    //     this.Building.Targets = [...this.Building.Targets,...building.buff.Targets];
-    // }
-
-    // static getInstance() {
-    //     if (!Buffs.instance) {
-    //         Buffs.instance = new Buffs();
-    //     }
-    //     return Buffs.instance;
-    // }
-
     Calculation(source, building) {
         let result = {};
         result[BuffRange.Online] = 1;
         result[BuffRange.Offline] = 1;
-        // result[BuffRange.Supply] = 0;
         let buffs;
         switch (source) {
             case BuffSource.Building:
@@ -124,9 +93,6 @@ class Buffs {
                 case BuffRange.Offline:
                     result[BuffRange.Offline] += buff.buff;
                     break;
-                // case BuffRange.Supply:
-                //     result[BuffRange.Supply] += buff.buff;
-                //     break;
                 case BuffRange.Business:
                     if (building.BuildingType === BuildingType.Business) {
                         result[BuffRange.Online] += buff.buff;

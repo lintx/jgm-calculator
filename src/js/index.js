@@ -184,14 +184,10 @@ let app = new Vue({
                     list:[]
                 };
                 cls.list.forEach(function (item) {
-                    if (item.star>0){
-                        // let clone = Object.create(Object.getPrototypeOf(item));
-                        // clone.star = item.star;
-                        // clone.buff = item.buff;
-                        // building.list.push(clone);
+                    if (Number(item.star)>0){
                         building.list.push({
-                            star:item.star,
-                            buff:item.buff,
+                            star:Number(item.star),
+                            quest:item.quest,
                             name:item.BuildingName
                         });
                     }
@@ -199,39 +195,8 @@ let app = new Vue({
                 list.push(building);
             });
 
-            // let temp_programs = [];
-            // list.forEach(function (value) {
-            //     let program = [];
-            //     let sel = getFlagArrs(value.list.length,3);
-            //     sel.forEach(function (val) {
-            //         let p = [];
-            //         val.forEach(function (v, index) {
-            //             if (v===1){
-            //                 p.push(value.list[index]);
-            //             }
-            //         });
-            //         program.push(p);
-            //     });
-            //     temp_programs.push(program);
-            // });
-            // this.programs = temp_programs;
-            // console.log(temp_programs)
-            // this.programs = [];
-            // let self = this;
-            // let allPrograms = [];
-
-            // let b = Buffs.getInstance();
-
-            //处理buff
-            // b.clear();
-            // this.buffs.forEach(function (source) {
-            //     source.list.forEach(function (buff) {
-            //         b.add(source.type,buff);
-            //     });
-            // });
-
             if(typeof(Worker)!=="undefined") {
-                worker = new Worker("static/worker.js");
+                worker = new Worker("static/worker.js?v=0.2");
                 let _self = this;
                 worker.onmessage = function(e){
                     let data = e.data;
@@ -255,48 +220,6 @@ let app = new Vue({
             } else {
                 //抱歉! Web Worker 不支持
             }
-            // temp_programs[0].forEach(function (val1) {
-            //     temp_programs[1].forEach(function (val2) {
-            //         temp_programs[2].forEach(function (val3) {
-            //             let temp = [...val1,...val2,...val3];
-            //             let addition = {
-            //                 online:0,
-            //                 offline:0,
-            //                 supply:0
-            //             };
-            //             let building = [];
-            //
-            //             b.clearBuilding();
-            //             temp.forEach(function (t) {
-            //                 b.addBuilding(t);
-            //                 if (t.quest>0){
-            //                     b.addQuest(t);
-            //                 }
-            //             });
-            //
-            //             temp.forEach(function (t) {
-            //                 let a = t.addition;
-            //                 addition.online += a[BuffRange.Online];
-            //                 addition.offline += a[BuffRange.Offline];
-            //                 building.push({
-            //                     online:Math.round(a[BuffRange.Online]*100),
-            //                     offline:Math.round(a[BuffRange.Offline]*100),
-            //                     building:t
-            //                 });
-            //             });
-            //             addition.online = Math.round(addition.online*100);
-            //             addition.offline = Math.round(addition.offline*100);
-            //             addition.supply = Math.round(b.supplyBuff*100);
-            //
-            //             // allPrograms.push({
-            //             //     addition:addition,
-            //             //     building:building
-            //             // });
-            //         });
-            //     });
-            // });
-
-            // this.programs = allPrograms;
         },
         save:function () {
             let config = {
@@ -305,10 +228,10 @@ let app = new Vue({
             };
             this.buildings.forEach(function (cls) {
                 cls.list.forEach(function (item) {
-                    if (item.star>0){
+                    if (Number(item.star)>0){
                         config.building.push({
                             building:item.BuildingName,
-                            star:item.star,
+                            star:Number(item.star),
                             quest:item.quest
                         });
                     }

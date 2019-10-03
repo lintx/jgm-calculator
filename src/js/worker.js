@@ -73,15 +73,6 @@ buildings.forEach((item)=>{
 });
 
 function calculation(list,buff) {
-    // let buffs = Buffs.getInstance();
-
-    // buffs.clear();
-    // buff.forEach(function (source) {
-    //     source.list.forEach(function (buff) {
-    //         buffs.add(source.type,new Buff(buff.range,buff.target,buff.buff));
-    //     });
-    // });
-
     let programs = [];
     list.forEach(function (building) {
         let program = [];
@@ -94,7 +85,7 @@ function calculation(list,buff) {
                     buildings.forEach((item)=>{
                         if (item.BuildingName===c.name){
                             item.star = c.star;
-                            item.buff = c.buff;
+                            item.quest = c.quest;
                             p.push(item);
                             return true;
                         }
@@ -225,31 +216,10 @@ function calculation(list,buff) {
                     result.supplyRarity.rare = rare;
                     result.supplyRarity.addition = addition;
                 }
-
-                // postMessage({
-                //     addition:addition,
-                //     building:building
-                // });
             });
         });
     });
 
-    // postMessage({
-    //     mode:"onlineMoney",
-    //     addition:result.onlineMoney.addition
-    // });
-    // postMessage({
-    //     mode:"supplyMoney",
-    //     addition:result.supplyMoney.addition
-    // });
-    // postMessage({
-    //     mode:"supplyRarity",
-    //     addition:result.supplyRarity.addition
-    // });
-    // postMessage({
-    //     mode:"offlineMoney",
-    //     addition:result.offlineMoney.addition
-    // });
     postMessage({
         mode:"result",
         result:{
