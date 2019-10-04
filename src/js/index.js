@@ -38,7 +38,7 @@ import "../css/index.scss";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.7";
+let version = "0.8";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
@@ -61,7 +61,12 @@ let app = new Vue({
             rarity:BuildingRarity,
             config:{
                 supplyStep50:false,
-                allBuildingLevel1:false
+                allBuildingLevel1:false,
+                policy:{
+                    stage1:false,
+                    stage2:false,
+                    stage3:false
+                }
             },
             buildings:[
                 {
@@ -179,6 +184,9 @@ let app = new Vue({
 
                 }
             }
+            if (config.hasOwnProperty("config")){
+                Object.assign(data.config, config.config);
+            }
         }
 
         return data;
@@ -215,6 +223,7 @@ let app = new Vue({
                         _self.calculationIng = false;
                         worker.terminate();
                         worker = undefined;
+                        _self.progress = 0;
                     }else {
                         let mode = data.mode;
                         if (mode==="result"){
@@ -236,7 +245,8 @@ let app = new Vue({
         save:function () {
             let config = {
                 building:[],
-                buff:[]
+                buff:[],
+                config: this.config
             };
             this.buildings.forEach(function (cls) {
                 cls.list.forEach(function (item) {
@@ -309,6 +319,31 @@ let app = new Vue({
             }catch (e) {
 
             }
+        },
+        levelKeyDown(e,item){
+            if (e.code==="ArrowUp"){
+                if (e.shiftKey){
+                    item.level += 100;
+                }else if (e.ctrlKey){
+                    item.level += 10;
+                }else {
+                    item.level += 1;
+                }
+            }else if (e.code==="ArrowDown"){
+                if (e.shiftKey){
+                    item.level -= 100;
+                }else if (e.ctrlKey){
+                    item.level -= 10;
+                }else {
+                    item.level -= 1;
+                }
+            }else if (e.code==="PageUp"){
+                item.level += 1000;
+            }else if (e.code==="PageDown"){
+                item.level -= 1000;
+            }
+            item.level = Math.min(2000,item.level);
+            item.level = Math.max(1,item.level);
         },
         export(){
             const h = this.$createElement;

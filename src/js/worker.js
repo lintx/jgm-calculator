@@ -1,4 +1,4 @@
-import {Buff, BuffRange, Buffs} from "./Buff";
+import {Buff, BuffRange, Buffs, BuffSource} from "./Buff";
 import Chalet from "./Builds/Chalet";
 import SteelStructureHouse from "./Builds/SteelStructureHouse";
 import Bungalow from "./Builds/Bungalow";
@@ -164,6 +164,23 @@ function calculation(list,buff,config) {
                         buffs.add(source.type,new Buff(buff.range,buff.target,buff.buff));
                     });
                 });
+                if (config.policy.stage1){
+                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Global,BuffRange.Global,100));//一带一路建设
+                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Business,BuffRange.Business,300));//自由贸易区建设
+                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Residence,BuffRange.Residence,300));//区域协调发展
+                }
+                if (config.policy.stage2){
+                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Global,BuffRange.Global,200));//全面深化改革
+                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Online,BuffRange.Online,200));//全面依法治国
+                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Offline,BuffRange.Offline,200));//科教兴国
+                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Industrial,BuffRange.Industrial,600));//创新驱动
+                }
+                if (config.policy.stage3){
+                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Industrial,BuffRange.Industrial,1200));//制造强国
+                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Supply,BuffRange.Supply,30));//优化营商环境
+                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Global,BuffRange.Global,400));//减税降费
+                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Business,BuffRange.Business,1200));//普惠金融
+                }
 
                 let legendary = 0;
                 let rare = 0;
@@ -302,7 +319,11 @@ function calculation(list,buff,config) {
             //1.先计算每个建筑升1级的金币-收益比
             //2.然后取出最优解和次优解，再计算最优解升级到多少级后变为次优解
             if (building.building.level<2000){
+                let level = building.building.level;
                 let benefitObj = upgradeBenefit(building.online,building.building,program.buffs);
+                building.building.level = level;
+                //及时把建筑的等级恢复原样
+
                 let benefit = benefitObj.benefit;
                 if (benefit>upgrade.best.upgradeBenefit){
                     upgrade.minor.upgradeBenefit = upgrade.best.upgradeBenefit;
@@ -311,11 +332,11 @@ function calculation(list,buff,config) {
 
                     upgrade.best.upgradeBenefit = benefit;
                     upgrade.best.building = building;
-                    upgrade.best.online = benefitObj.online;
+                    upgrade.best.online = building.online;
                 }else if (benefit>upgrade.minor.upgradeBenefit){
                     upgrade.minor.upgradeBenefit = benefit;
                     upgrade.minor.building = building;
-                    upgrade.best.online = benefitObj.online;
+                    upgrade.minor.online = building.online;
                 }
             }
 
@@ -323,19 +344,25 @@ function calculation(list,buff,config) {
             building.offline = renderSize(building.offline);
         });
 
+        // console.log("最优建筑：" + upgrade.best.building.building.BuildingName + ",等级：" + upgrade.best.building.building.level + ",效益：" + upgrade.best.upgradeBenefit + ",次优建筑:" + upgrade.minor.building.building.BuildingName + ",效益：" + upgrade.minor.upgradeBenefit);
+
         if (upgrade.best.building!==null && upgrade.best.building.building.level<2000){
+            let level = upgrade.best.building.building.level;
             while (true){
                 let benefitObj = upgradeBenefit(upgrade.best.online,upgrade.best.building.building,program.buffs);
+                // console.log("模拟升级：" + upgrade.best.building.building.BuildingName + ",目标等级：" + upgrade.best.building.building.level + ",效益：" + benefitObj.benefit);
 
                 upgrade.best.online = benefitObj.online;
                 if (benefitObj.benefit<upgrade.minor.upgradeBenefit){
                     program.addition.upgrade = {
                         building:upgrade.best.building.building,
-                        toLevel:upgrade.best.building.building.level - 1
+                        toLevel:upgrade.best.building.building.level - 1,
+                        nextBuilding:upgrade.minor.building.building
                     };
                     break;
                 }
             }
+            upgrade.best.building.building.level = level;
         }
     });
 
@@ -396,7 +423,7 @@ function renderSize(value){
     if(null===value||value===''){
         return "0";
     }
-    let unitArr = ["","K","M","B","T","aa","bb","cc","dd","ee","ff","gg"];
+    let unitArr = ["","K","M","B","T","aa","bb","cc","dd","ee","ff","gg","hh","ii","jj","kk","ll","mm","nn","oo","pp","qq","rr","ss","tt","uu","vv","ww","xx","yy","zz"];
     let index=0,
         srcsize = parseFloat(value);
     index=Math.floor(Math.log(srcsize)/Math.log(1000));
@@ -409,7 +436,11 @@ function renderSize(value){
     }else {
         size = size.toFixed(2);
     }
-    return size+unitArr[index];
+    let unit = unitArr[index];
+    if (unit===undefined){
+        unit = "E" + index * 3;
+    }
+    return size + unit;
 }
 
 function getFlagArrs(m, n) {

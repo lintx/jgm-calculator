@@ -18,8 +18,76 @@
             </p>
         </div>
         <div>
-            <h3 class="mb-3">配置建筑及星级</h3>
+            <h3 class="mb-3">政策、游记及任务加成配置</h3>
             <div class="row mb-5">
+                <div class="col-12">
+                    <div class="alert alert-info" role="alert">
+                        <h4 class="alert-heading">提示</h4>
+                        <ul>
+                            <li>国庆“分享助力”buff和金钱、供货都没有关系，不要填写。</li>
+                            <li>政策加成建议将政策中心内所有已研究的项目按各分类累加后填写，这样可以计算精准数值。</li>
+                            <li>查看游记加成：切换到家国之光，点击“中国游记”卡片右上角的星星即可查看。</li>
+                            <li>城市任务加成可以点击主界面左下角的“城市任务”后查看，也可以在主界面右上角的buff栏查看（buff名和当前阶段城市任务一致）。</li>
+                            <li>城市任务对单个建筑的buff，在下面的建筑配置中填写。</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-12 mb-3">
+                    <div class="form-check">
+                        <input v-model="config.policy.stage1" class="form-check-input" type="checkbox" value="" id="policy_stage1">
+                        <label class="form-check-label" for="policy_stage1">
+                            第一阶段政策是否完成（勾选后填写政策buff时不要计算第一阶段政策）
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input v-model="config.policy.stage2" class="form-check-input" type="checkbox" value="" id="policy_stage2">
+                        <label class="form-check-label" for="policy_stage2">
+                            第二阶段政策是否完成（勾选后填写政策buff时不要计算第二阶段政策）
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input v-model="config.policy.stage3" class="form-check-input" type="checkbox" value="" id="policy_stage3">
+                        <label class="form-check-label" for="policy_stage3">
+                            第三阶段政策是否完成（勾选后填写政策buff时不要计算第三阶段政策）
+                        </label>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4" v-for="buffSource in buffs">
+                    <h5>{{buffSource.type}}</h5>
+                    <table class="table table-bordered table-sm">
+                        <thead>
+                        <tr>
+                            <th class="text-center">加成类型</th>
+                            <th class="text-center">加成比例</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="buff in buffSource.list">
+                            <td class="text-center text-nowrap">{{buff.target}}</td>
+                            <td>
+                                <div class="input-group input-group-sm">
+                                    <input @focus="$event.target.select()" v-model="buff.buff" type="number" class="form-control text-right">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <h3 class="mb-3">建筑配置</h3>
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="alert alert-info" role="alert">
+                        <h4 class="alert-heading">提示</h4>
+                        <ul>
+                            <li>勾选禁用表示在计算时不计算这个建筑，禁用多个建筑可以显著缩短计算时间。</li>
+                            <li>任务加成指的是城市任务中，对单个建筑的buff，没有的话全部填0，有的话在对应建筑后面填写对应的buff值。</li>
+                        </ul>
+                    </div>
+                </div>
                 <div v-for="types in buildings" class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4">
                     <h5>{{types.type}}</h5>
                     <table class="table table-bordered table-sm">
@@ -51,50 +119,20 @@
                                 </select>
                             </td>
                             <td class="text-center">
-                                <input @focus="$event.target.select()" v-model="item.level" type="number" min="1" max="2000" step="1" class="form-control text-right form-control-sm calculator-level">
+                                <input
+                                        @focus="$event.target.select()"
+                                        @keydown.prevent="levelKeyDown($event,item)"
+                                        v-model="item.level"
+                                        type="number"
+                                        min="1"
+                                        max="2000"
+                                        step="1"
+                                        class="form-control text-right form-control-sm calculator-level"
+                                >
                             </td>
                             <td>
                                 <div class="input-group input-group-sm">
                                     <input @focus="$event.target.select()" v-model="item.quest" type="number" class="form-control text-right">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">%</span>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <h3 class="mb-3">政策、游记及任务加成</h3>
-            <div class="row mb-5">
-                <div class="col-12">
-                    <div class="alert alert-info" role="alert">
-                        <h4 class="alert-heading">提示</h4>
-                        <ul>
-                            <li>家国之光、国庆buff属于政策加成。</li>
-                            <li>国庆“分享助力”buff和金钱、供货都没有关系，不要填写。</li>
-                            <li>政策加成建议将政策中心内所有已研究的项目按各分类累加后填写，这样可以计算精准数值。</li>
-                            <li>查看游记加成：切换到家国之光，点击“中国游记”卡片右上角的星星即可查看。</li>
-                            <li>城市任务加成可以点击主界面左下角的“城市任务”后查看，也可以在主界面右上角的buff栏查看（buff名和当前阶段城市任务一致）。</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4" v-for="buffSource in buffs">
-                    <h5>{{buffSource.type}}</h5>
-                    <table class="table table-bordered table-sm">
-                        <thead>
-                        <tr>
-                            <th class="text-center">加成类型</th>
-                            <th class="text-center">加成比例</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="buff in buffSource.list">
-                            <td class="text-center text-nowrap">{{buff.target}}</td>
-                            <td>
-                                <div class="input-group input-group-sm">
-                                    <input @focus="$event.target.select()" v-model="buff.buff" type="number" class="form-control text-right">
                                     <div class="input-group-append">
                                         <span class="input-group-text">%</span>
                                     </div>
@@ -152,43 +190,48 @@
                         <h4 class="alert-heading">点击上面的“计算结果”并等待计算完毕后查看</h4>
                     </div>
                 </div>
-                <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-3" v-for="program in programs">
-                    <div class="alert alert-info" role="alert" v-if="program.addition.upgrade">
-                        <h4 class="alert-heading">{{program.title}}</h4>
-                        本方案建筑升级建议：升级
-                        <span class="badge" :class="[{ 'badge-primary': program.addition.upgrade.building.rarity===rarity.Common }, { 'badge-rare': program.addition.upgrade.building.rarity===rarity.Rare },{ 'badge-warning': program.addition.upgrade.building.rarity===rarity.Legendary }]">{{program.addition.upgrade.building.BuildingName}}</span>
-                        直到
-                        <span class="badge badge-info">{{program.addition.upgrade.toLevel}}</span>
-                        级
+                <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-3 mb-4" v-for="program in programs">
+                    <div class="card border-info">
+                        <table class="table table-sm">
+                            <thead>
+                            <tr>
+                                <th class="text-center">在线</th>
+                                <th class="text-center" colspan="2">{{program.addition.online}}/秒</th>
+                            </tr>
+                            <tr>
+                                <th class="text-center">离线</th>
+                                <th class="text-center" colspan="2">{{program.addition.offline}}/秒</th>
+                            </tr>
+                            <tr>
+                                <th class="text-center">供货</th>
+                                <th class="text-center" colspan="2">{{program.addition.supply}}%</th>
+                            </tr>
+                            <tr>
+                                <th class="text-center">建筑</th>
+                                <th class="text-center">在线</th>
+                                <th class="text-center">离线</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="building in program.addition.buildings" :class="[{ 'table-primary': building.building.rarity===rarity.Common }, { 'table-rare': building.building.rarity===rarity.Rare },{ 'table-warning': building.building.rarity===rarity.Legendary }]">
+                                <td class="text-nowrap text-center">{{building.building.BuildingName}}</td>
+                                <td class="text-center">{{building.online}}/秒</td>
+                                <td class="text-center">{{building.offline}}/秒</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div class="card-body">
+                            <h5 class="card-title">{{program.title}}</h5>
+                            <p class="card-text">
+                                升级建议：升级
+                                <span class="badge" :class="[{ 'badge-primary': program.addition.upgrade.building.rarity===rarity.Common }, { 'badge-rare': program.addition.upgrade.building.rarity===rarity.Rare },{ 'badge-warning': program.addition.upgrade.building.rarity===rarity.Legendary }]">{{program.addition.upgrade.building.BuildingName}}</span>
+                                直到
+                                <span class="badge badge-info">{{program.addition.upgrade.toLevel}}</span>
+                                级，然后升级
+                                <span class="badge" :class="[{ 'badge-primary': program.addition.upgrade.nextBuilding.rarity===rarity.Common }, { 'badge-rare': program.addition.upgrade.nextBuilding.rarity===rarity.Rare },{ 'badge-warning': program.addition.upgrade.nextBuilding.rarity===rarity.Legendary }]">{{program.addition.upgrade.nextBuilding.BuildingName}}</span>
+                            </p>
+                        </div>
                     </div>
-                    <table class="table table-bordered table-sm">
-                        <thead>
-                        <tr>
-                            <th class="text-center">在线</th>
-                            <td class="text-center" colspan="2">{{program.addition.online}}/秒</td>
-                        </tr>
-                        <tr>
-                            <th class="text-center">离线</th>
-                            <td class="text-center" colspan="2">{{program.addition.offline}}/秒</td>
-                        </tr>
-                        <tr>
-                            <th class="text-center">供货</th>
-                            <td class="text-center" colspan="2">{{program.addition.supply}}%</td>
-                        </tr>
-                        <tr>
-                            <th class="text-center">建筑</th>
-                            <th class="text-center">在线</th>
-                            <th class="text-center">离线</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="building in program.addition.buildings" :class="[{ 'table-primary': building.building.rarity===rarity.Common }, { 'table-rare': building.building.rarity===rarity.Rare },{ 'table-warning': building.building.rarity===rarity.Legendary }]">
-                            <td class="text-nowrap text-center">{{building.building.BuildingName}}</td>
-                            <td class="text-center">{{building.online}}/秒</td>
-                            <td class="text-center">{{building.offline}}/秒</td>
-                        </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
