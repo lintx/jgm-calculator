@@ -15,6 +15,20 @@ class Building{
         this.baseMoney = baseMoney;
     }
 
+    get tooltip(){
+        if (this.star===0){
+            return "";
+        }
+        let tooltip = [];
+        tooltip.push(this.BuildingName);
+        tooltip.push(Array(this.star+1).join("★"));
+        tooltip.push("等级 " + this.level);
+        this.buffs.forEach((buff)=>{
+            tooltip.push(buff.target + "的收入增加 " + Math.round(this.getBuffValue(buff) * 100) + "%");
+        });
+        return tooltip.join("<br />");
+    }
+
     calculation(buffs){
         let addition = {};
         let money = this.money;

@@ -103,7 +103,7 @@
                         </thead>
                         <tbody>
                         <tr v-for="item in types.list" :class="[{ 'table-primary': item.rarity===rarity.Common }, { 'table-rare': item.rarity===rarity.Rare },{ 'table-warning': item.rarity===rarity.Legendary }]">
-                            <td class="text-nowrap text-center">{{item.BuildingName}}</td>
+                            <td class="text-nowrap text-center" v-b-tooltip.hover.html.v-info :title="item.tooltip">{{item.BuildingName}}</td>
                             <td class="text-center">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" v-model="item.disabled">
@@ -214,7 +214,14 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="building in program.addition.buildings" :class="[{ 'table-primary': building.building.rarity===rarity.Common }, { 'table-rare': building.building.rarity===rarity.Rare },{ 'table-warning': building.building.rarity===rarity.Legendary }]">
+                            <tr v-for="building in program.addition.buildings"
+                                :class="[
+                                 { 'table-primary': building.building.rarity===rarity.Common },
+                                 { 'table-rare': building.building.rarity===rarity.Rare },
+                                 { 'table-warning': building.building.rarity===rarity.Legendary }
+                                 ]"
+                                v-b-tooltip.hover.html.v-info :title="building.building.tooltip"
+                            >
                                 <td class="text-nowrap text-center">{{building.building.BuildingName}}</td>
                                 <td class="text-center">{{building.online}}/秒</td>
                                 <td class="text-center">{{building.offline}}/秒</td>
@@ -225,11 +232,11 @@
                             <h5 class="card-title">{{program.title}}</h5>
                             <p class="card-text">
                                 升级建议：升级
-                                <span class="badge" :class="[{ 'badge-primary': program.addition.upgrade.building.rarity===rarity.Common }, { 'badge-rare': program.addition.upgrade.building.rarity===rarity.Rare },{ 'badge-warning': program.addition.upgrade.building.rarity===rarity.Legendary }]">{{program.addition.upgrade.building.BuildingName}}</span>
+                                <span class="badge" :class="[{ 'badge-primary': program.addition.upgrade.building.rarity===rarity.Common }, { 'badge-rare': program.addition.upgrade.building.rarity===rarity.Rare },{ 'badge-warning': program.addition.upgrade.building.rarity===rarity.Legendary }]" v-b-tooltip.hover.html.v-info :title="program.addition.upgrade.building.tooltip">{{program.addition.upgrade.building.BuildingName}}</span>
                                 直到
                                 <span class="badge badge-info">{{program.addition.upgrade.toLevel}}</span>
                                 级，然后升级
-                                <span class="badge" :class="[{ 'badge-primary': program.addition.upgrade.nextBuilding.rarity===rarity.Common }, { 'badge-rare': program.addition.upgrade.nextBuilding.rarity===rarity.Rare },{ 'badge-warning': program.addition.upgrade.nextBuilding.rarity===rarity.Legendary }]">{{program.addition.upgrade.nextBuilding.BuildingName}}</span>
+                                <span class="badge" :class="[{ 'badge-primary': program.addition.upgrade.nextBuilding.rarity===rarity.Common }, { 'badge-rare': program.addition.upgrade.nextBuilding.rarity===rarity.Rare },{ 'badge-warning': program.addition.upgrade.nextBuilding.rarity===rarity.Legendary }]" v-b-tooltip.hover.html.v-info :title="program.addition.upgrade.nextBuilding.tooltip">{{program.addition.upgrade.nextBuilding.BuildingName}}</span>
                             </p>
                         </div>
                     </div>

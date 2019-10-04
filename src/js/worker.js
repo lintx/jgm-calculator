@@ -125,6 +125,7 @@ function calculation(list,buff,config) {
             supply:0,
             legendary:0,
             rare:0,
+            money:0,
             addition:{},
             buffs:null
         },
@@ -238,12 +239,22 @@ function calculation(list,buff,config) {
                 }
                 if (supply===result.supplyRarity.supply){
                     if (legendary===result.supplyRarity.legendary){
-                        if (rare>result.supplyRarity.rare){
+                        if (rare===result.supplyRarity.rare){
+                            if (addition.online>result.supplyRarity.money){
+                                result.supplyRarity.supply = supply;
+                                result.supplyRarity.legendary = legendary;
+                                result.supplyRarity.rare = rare;
+                                result.supplyRarity.addition = addition;
+                                result.supplyRarity.buffs = buffs;
+                                result.supplyRarity.money = addition.online;
+                            }
+                        }else if (rare>result.supplyRarity.rare){
                             result.supplyRarity.supply = supply;
                             result.supplyRarity.legendary = legendary;
                             result.supplyRarity.rare = rare;
                             result.supplyRarity.addition = addition;
                             result.supplyRarity.buffs = buffs;
+                            result.supplyRarity.money = addition.online;
                         }
                     }else if (legendary>result.supplyRarity.legendary){
                         result.supplyRarity.supply = supply;
@@ -251,6 +262,7 @@ function calculation(list,buff,config) {
                         result.supplyRarity.rare = rare;
                         result.supplyRarity.addition = addition;
                         result.supplyRarity.buffs = buffs;
+                        result.supplyRarity.money = addition.online;
                     }
                 }else if (supply>result.supplyRarity.supply){
                     result.supplyRarity.supply = supply;
@@ -258,6 +270,7 @@ function calculation(list,buff,config) {
                     result.supplyRarity.rare = rare;
                     result.supplyRarity.addition = addition;
                     result.supplyRarity.buffs = buffs;
+                    result.supplyRarity.money = addition.online;
                 }
                 if (supply===result.supplyLegendaryMoney.supply){
                     if (legendary===result.supplyLegendaryMoney.legendary){

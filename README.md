@@ -1,4 +1,4 @@
-## 家国梦计算器 V0.9
+## 家国梦计算器 V0.10
 
 在线使用
 [https://lintx.github.io/jgm-calculator/index.html](https://lintx.github.io/jgm-calculator/index.html)

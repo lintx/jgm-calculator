@@ -38,7 +38,7 @@ import "../css/index.scss";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.9";
+let version = "0.10";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
@@ -228,6 +228,29 @@ let app = new Vue({
                         let mode = data.mode;
                         if (mode==="result"){
                             _self.programs = data.result;
+                            _self.programs.forEach(function (program) {
+                                program.addition.buildings.forEach(function (pb) {
+                                    _self.buildings.forEach((building)=>{
+                                        building.list.forEach((item)=>{
+                                            if (pb.building.BuildingName===item.BuildingName){
+                                                pb.building = item;
+                                                return true;
+                                            }
+                                        });
+                                    });
+                                });
+                                _self.buildings.forEach((building)=>{
+                                    building.list.forEach((item)=>{
+                                        if (program.addition.upgrade.building.BuildingName===item.BuildingName){
+                                            program.addition.upgrade.building = item;
+                                        }
+                                        if (program.addition.upgrade.nextBuilding.BuildingName===item.BuildingName){
+                                            program.addition.upgrade.nextBuilding = item;
+                                        }
+                                    });
+                                });
+                            });
+
                         }else if (mode==="progress"){
                             _self.progress = data.progress;
                         }
