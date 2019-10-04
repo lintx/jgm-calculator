@@ -2,12 +2,25 @@ select.form-control{
   min-width:56px;
 }
 .table-rare{
-  background: #7741de;
+  background-color: #7741de;
   td{
     border-color: #5c34a7;
     color: #cecece;
   }
 }
 .calculator-level{
-  min-width: 65px;
+  min-width: 48px;
+}
+.badge-rare{
+  background-color: #7741de;
+  color: #cecece;
+}
+
+//去除number的箭头
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+input[type="number"]{
+  -moz-appearance: textfield;
 }

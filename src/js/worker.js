@@ -30,10 +30,11 @@ import PartsFactory from "./Builds/PartsFactory";
 import TencentMachinery from "./Builds/TencentMachinery";
 import PeoplesOil from "./Builds/PeoplesOil";
 import {BuildingRarity} from "./Building";
+import {getCost} from "./Level";
 
 onmessage = function (e) {
     let data = e.data;
-    calculation(data.list,data.buff);
+    calculation(data.list,data.buff,data.config);
 };
 
 let buildings = [
@@ -72,7 +73,7 @@ buildings.forEach((item)=>{
     item.initBuffs();
 });
 
-function calculation(list,buff) {
+function calculation(list,buff,config) {
     let programs = [];
     list.forEach(function (building) {
         let program = [];
@@ -107,22 +108,33 @@ function calculation(list,buff) {
     let result = {
         onlineMoney:{
             money:0,
-            addition:{}
+            addition:{},
+            buffs:null
         },
         supplyMoney:{
             supply:0,
             money:0,
-            addition:{}
+            addition:{},
+            buffs:null
         },
         supplyRarity:{
             supply:0,
             legendary:0,
             rare:0,
-            addition:{}
+            addition:{},
+            buffs:null
+        },
+        supplyLegendaryMoney:{
+            supply:0,
+            legendary:0,
+            money:0,
+            addition:{},
+            buffs:null
         },
         offlineMoney:{
             money:0,
-            addition:{}
+            addition:{},
+            buffs:null
         }
     };
 
@@ -139,7 +151,7 @@ function calculation(list,buff) {
                     online:0,
                     offline:0,
                     supply:0,
-                    buildings:[]
+                    buildings:[],
                 };
 
                 let buffs = new Buffs();
@@ -176,66 +188,151 @@ function calculation(list,buff) {
                 });
                 addition.supply = Math.round(buffs.supplyBuff*100);
 
+                let supply = addition.supply;
+                if (config.supplyStep50){
+                    supply = Math.floor(supply/50);
+                }
                 if (addition.online>result.onlineMoney.money){
                     result.onlineMoney.money = addition.online;
                     result.onlineMoney.addition = addition;
+                    result.onlineMoney.buffs = buffs;
                 }
                 if (addition.offline>result.offlineMoney.money){
                     result.offlineMoney.money = addition.offline;
                     result.offlineMoney.addition = addition;
+                    result.offlineMoney.buffs = buffs;
                 }
-                if (addition.supply===result.supplyMoney.supply){
+                if (supply===result.supplyMoney.supply){
                     if (addition.online>result.supplyMoney.money){
                         result.supplyMoney.money = addition.online;
-                        result.supplyMoney.supply = addition.supply;
+                        result.supplyMoney.supply = supply;
                         result.supplyMoney.addition = addition;
+                        result.supplyMoney.buffs = buffs;
                     }
-                }else if (addition.supply>result.supplyMoney.supply){
+                }else if (supply>result.supplyMoney.supply){
                     result.supplyMoney.money = addition.online;
-                    result.supplyMoney.supply = addition.supply;
+                    result.supplyMoney.supply = supply;
                     result.supplyMoney.addition = addition;
+                    result.supplyMoney.buffs = buffs;
                 }
-                if (addition.supply===result.supplyRarity.supply){
+                if (supply===result.supplyRarity.supply){
                     if (legendary===result.supplyRarity.legendary){
                         if (rare>result.supplyRarity.rare){
-                            result.supplyRarity.supply = addition.supply;
+                            result.supplyRarity.supply = supply;
                             result.supplyRarity.legendary = legendary;
                             result.supplyRarity.rare = rare;
                             result.supplyRarity.addition = addition;
+                            result.supplyRarity.buffs = buffs;
                         }
                     }else if (legendary>result.supplyRarity.legendary){
-                        result.supplyRarity.supply = addition.supply;
+                        result.supplyRarity.supply = supply;
                         result.supplyRarity.legendary = legendary;
                         result.supplyRarity.rare = rare;
                         result.supplyRarity.addition = addition;
+                        result.supplyRarity.buffs = buffs;
                     }
-                }else if (addition.supply>result.supplyRarity.supply){
-                    result.supplyRarity.supply = addition.supply;
+                }else if (supply>result.supplyRarity.supply){
+                    result.supplyRarity.supply = supply;
                     result.supplyRarity.legendary = legendary;
                     result.supplyRarity.rare = rare;
                     result.supplyRarity.addition = addition;
+                    result.supplyRarity.buffs = buffs;
+                }
+                if (supply===result.supplyLegendaryMoney.supply){
+                    if (legendary===result.supplyLegendaryMoney.legendary){
+                        if (addition.online>result.supplyLegendaryMoney.money){
+                            result.supplyLegendaryMoney.supply = supply;
+                            result.supplyLegendaryMoney.legendary = legendary;
+                            result.supplyLegendaryMoney.money = addition.online;
+                            result.supplyLegendaryMoney.addition = addition;
+                            result.supplyLegendaryMoney.buffs = buffs;
+                        }
+                    }else if (legendary>result.supplyRarity.legendary){
+                        result.supplyLegendaryMoney.supply = supply;
+                        result.supplyLegendaryMoney.legendary = legendary;
+                        result.supplyLegendaryMoney.money = addition.online;
+                        result.supplyLegendaryMoney.addition = addition;
+                        result.supplyLegendaryMoney.buffs = buffs;
+                    }
+                }else if (supply>result.supplyLegendaryMoney.supply){
+                    result.supplyLegendaryMoney.supply = supply;
+                    result.supplyLegendaryMoney.legendary = legendary;
+                    result.supplyLegendaryMoney.money = addition.online;
+                    result.supplyLegendaryMoney.addition = addition;
+                    result.supplyLegendaryMoney.buffs = buffs;
                 }
             });
         });
     });
 
-    let arr = [result.onlineMoney.addition];
-    if (arr.indexOf(result.supplyMoney.addition)===-1){
-        arr.push(result.supplyMoney.addition);
-    }
-    if (arr.indexOf(result.supplyRarity.addition)===-1){
-        arr.push(result.supplyRarity.addition);
-    }
-    if (arr.indexOf(result.offlineMoney.addition)===-1){
-        arr.push(result.offlineMoney.addition);
-    }
-    arr.forEach((addition)=>{
-        addition.online = renderSize(addition.online);
-        addition.offline = renderSize(addition.offline);
-        addition.buildings.forEach((building)=>{
+    let arr = [];
+    Object.keys(result).forEach((key)=>{
+        let r = result[key];
+        let arr1 = [];
+        arr.forEach((ar)=>{
+            arr1.push(ar.addition);
+        });
+        if (arr1.indexOf(r.addition)===-1){
+            arr.push(r);
+        }
+    });
+
+    arr.forEach((program)=>{
+        program.addition.online = renderSize(program.addition.online);
+        program.addition.offline = renderSize(program.addition.offline);
+
+        let upgrade = {
+            best:{
+                online:0,
+                upgradeBenefit:0,
+                building:null
+            },
+            minor:{
+                online:0,
+                upgradeBenefit:0,
+                building:null
+            }
+        };
+        program.addition.buildings.forEach((building)=>{
+            //计算方案内建筑升级最优解
+            //1.先计算每个建筑升1级的金币-收益比
+            //2.然后取出最优解和次优解，再计算最优解升级到多少级后变为次优解
+            if (building.building.level<2000){
+                let benefitObj = upgradeBenefit(building.online,building.building,program.buffs);
+                let benefit = benefitObj.benefit;
+                if (benefit>upgrade.best.upgradeBenefit){
+                    upgrade.minor.upgradeBenefit = upgrade.best.upgradeBenefit;
+                    upgrade.minor.building = upgrade.best.building;
+                    upgrade.minor.online = upgrade.best.online;
+
+                    upgrade.best.upgradeBenefit = benefit;
+                    upgrade.best.building = building;
+                    upgrade.best.online = benefitObj.online;
+                }else if (benefit>upgrade.minor.upgradeBenefit){
+                    upgrade.minor.upgradeBenefit = benefit;
+                    upgrade.minor.building = building;
+                    upgrade.best.online = benefitObj.online;
+                }
+            }
+
             building.online = renderSize(building.online);
             building.offline = renderSize(building.offline);
         });
+
+        if (upgrade.best.building!==null && upgrade.best.building.building.level<2000){
+            while (true){
+                let benefitObj = upgradeBenefit(upgrade.best.online,upgrade.best.building.building,program.buffs);
+
+                upgrade.best.online = benefitObj.online;
+                if (benefitObj.benefit<upgrade.minor.upgradeBenefit){
+                    program.addition.upgrade = {
+                        building:upgrade.best.building.building,
+                        toLevel:upgrade.best.building.building.level - 1
+                    };
+                    break;
+                }
+            }
+        }
     });
 
     postMessage({
@@ -250,8 +347,12 @@ function calculation(list,buff) {
                 addition:result.supplyMoney.addition
             },
             {
-                title:"供货优先、橙色次之策略",
+                title:"供货优先、橙卡次之、紫卡再次之策略",
                 addition:result.supplyRarity.addition
+            },
+            {
+                title:"供货优先、橙卡次之、金币再次之策略",
+                addition:result.supplyLegendaryMoney.addition
             },
             {
                 title:"离线金币优先策略",
@@ -260,6 +361,31 @@ function calculation(list,buff) {
         ]
     });
     postMessage("done");
+}
+
+function upgradeBenefit(online,building,buffs) {
+    if (building.level<2000){
+        building.level += 1;
+    }else {
+        return {
+            online: online,
+            benefit: 0
+        };
+    }
+    let cost = getCost(building.level,building.rarity);
+
+    let addition = building.calculation(buffs);
+    let addOnline = addition[BuffRange.Online] - online;
+    if (addOnline===0){
+        return {
+            online: addition[BuffRange.Online],
+            benefit: 0
+        };
+    }
+    return {
+        online:addition[BuffRange.Online],
+        benefit:addOnline/cost
+    };
 }
 
 function renderSize(value){

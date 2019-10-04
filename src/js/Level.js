@@ -2007,14 +2007,14 @@ function getIncome(level) {
     return levelData[level].income;
 }
 
-function getCost(levle, rarity) {
+function getCost(level, rarity) {
     switch (rarity) {
         case BuildingRarity.Common:
-            return levelData[levle].commonCost;
+            return levelData[level].commonCost;
         case BuildingRarity.Rare:
-            return levelData[levle].rareCost;
+            return levelData[level].rareCost;
         case BuildingRarity.Legendary:
-            return levelData[levle].legendaryCost;
+            return levelData[level].legendaryCost;
     }
     return 0;
 }

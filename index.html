@@ -98,16 +98,35 @@
                     </table>
                 </div>
             </div>
+            <h3 class="mb-3">其他配置</h3>
+            <div class="mb-5 row">
+                <div class="col-12">
+                    <div class="form-check">
+                        <input v-model="supplyStep50" class="form-check-input" type="checkbox" value="" id="supplyStep50">
+                        <label class="form-check-label" for="supplyStep50">
+                            供货计算以每50%为一级
+                        </label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="alert alert-info" role="alert">
+                        <h4 class="alert-heading">提示</h4>
+                        <ul>
+                            <li>供货加成在1-49之间时，虽然不能增加红包、相册获取数量，但是能增加蓝币、金币、贡献的数量，所以不建议开启供货计算50%。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
             <h3 class="mb-3">操作</h3>
             <div class="mb-5">
-                <button type="button" @click="calculation" :disabled="calculationing" :class="{disabled:calculationing}" class="btn btn-primary">{{calculationing?"计算中...":"计算结果"}}</button>
-                <button type="button" @click="save" :disabled="calculationing" :class="{disabled:calculationing}" class="btn btn-success">保存参数</button>
-                <button type="button" @click="clear" :disabled="calculationing" :class="{disabled:calculationing}" class="btn btn-danger">清除存档</button>
-                <button type="button" @click="stop" v-if="calculationing" class="btn btn-danger">停止计算</button>
+                <button type="button" @click="calculation" :disabled="calculationIng" :class="{disabled:calculationIng}" class="btn btn-primary">{{calculationIng?"计算中...":"计算结果"}}</button>
+                <button type="button" @click="save" :disabled="calculationIng" :class="{disabled:calculationIng}" class="btn btn-success">保存参数</button>
+                <button type="button" @click="clear" :disabled="calculationIng" :class="{disabled:calculationIng}" class="btn btn-danger">清除存档</button>
+                <button type="button" @click="stop" v-if="calculationIng" class="btn btn-danger">停止计算</button>
             </div>
             <h3 class="mb-3">结果</h3>
             <div class="row">
-                <div class="col-12" v-if="calculationing">
+                <div class="col-12" v-if="calculationIng">
                     <div class="alert alert-info" role="alert">
                         <h4 class="alert-heading">正在计算，请稍候...</h4>
                         <div class="progress">
@@ -115,13 +134,20 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12" v-if="!calculationing && programs.length==0">
+                <div class="col-12" v-if="!calculationIng && programs.length==0">
                     <div class="alert alert-info" role="alert">
                         <h4 class="alert-heading">点击上面的“计算结果”并等待计算完毕后查看</h4>
                     </div>
                 </div>
                 <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-3" v-for="program in programs">
-                    <h5>{{program.title}}</h5>
+                    <div class="alert alert-info" role="alert" v-if="program.addition.upgrade">
+                        <h4 class="alert-heading">{{program.title}}</h4>
+                        本方案建筑升级建议：升级
+                        <span class="badge" :class="[{ 'badge-primary': program.addition.upgrade.building.rarity===rarity.Common }, { 'badge-rare': program.addition.upgrade.building.rarity===rarity.Rare },{ 'badge-warning': program.addition.upgrade.building.rarity===rarity.Legendary }]">{{program.addition.upgrade.building.BuildingName}}</span>
+                        直到
+                        <span class="badge badge-info">{{program.addition.upgrade.toLevel}}</span>
+                        级
+                    </div>
                     <table class="table table-bordered table-sm">
                         <thead>
                         <tr>

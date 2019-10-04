@@ -34,7 +34,7 @@ import {Buff, BuffRange, Buffs, BuffSource} from "./Buff";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.5";
+let version = "0.6";
 
 let app = new Vue({
     el:"#app",
@@ -52,6 +52,7 @@ let app = new Vue({
         let data = {
             version:version,
             rarity:BuildingRarity,
+            supplyStep50:false,
             buildings:[
                 {
                     type:BuildingType.Residence,
@@ -102,7 +103,7 @@ let app = new Vue({
             buffs:[],
             programs:[],
             progress:0,
-            calculationing:false
+            calculationIng:false
         };
         Object.keys(BuffSource).forEach((key)=>{
             let source = BuffSource[key];
@@ -174,7 +175,7 @@ let app = new Vue({
     },
     methods:{
         calculation:function () {
-            this.calculationing = true;
+            this.calculationIng = true;
             //拿出已有的建筑
             let list = [];
             this.buildings.forEach(function (cls) {
@@ -201,7 +202,7 @@ let app = new Vue({
                 worker.onmessage = function(e){
                     let data = e.data;
                     if (data==="done"){
-                        _self.calculationing = false;
+                        _self.calculationIng = false;
                         worker.terminate();
                         worker = undefined;
                     }else {
@@ -215,7 +216,10 @@ let app = new Vue({
                 };
                 worker.postMessage({
                     list:list,
-                    buff:this.buffs
+                    buff:this.buffs,
+                    config:{
+                        supplyStep50:this.supplyStep50
+                    }
                 });
             } else {
                 //抱歉! Web Worker 不支持
@@ -264,7 +268,7 @@ let app = new Vue({
             try {
                 worker.terminate();
                 worker = undefined;
-                this.calculationing = false;
+                this.calculationIng = false;
             }catch (e) {
 
             }
