@@ -65,6 +65,11 @@ module.exports = function (env, argv) {
             // publicPath: 相对目录，可以使用cdn地址（开发环境不设置等）
             publicPath:publicPath
         },
+        resolve: {
+            alias: {
+                'vue$': 'vue/dist/vue.esm.js' // 用 webpack 1 时需用 'vue/dist/vue.common.js'
+            }
+        },
         //优化选项
         optimization:{
             splitChunks:{

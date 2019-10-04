@@ -87,7 +87,11 @@ function calculation(list,buff,config) {
                         if (item.BuildingName===c.name){
                             item.star = c.star;
                             item.quest = c.quest;
-                            item.level = c.level;
+                            if (!config.allBuildingLevel1){
+                                item.level = c.level;
+                            }else {
+                                item.level = 1;
+                            }
                             p.push(item);
                             return true;
                         }
@@ -247,7 +251,7 @@ function calculation(list,buff,config) {
                             result.supplyLegendaryMoney.addition = addition;
                             result.supplyLegendaryMoney.buffs = buffs;
                         }
-                    }else if (legendary>result.supplyRarity.legendary){
+                    }else if (legendary>result.supplyLegendaryMoney.legendary){
                         result.supplyLegendaryMoney.supply = supply;
                         result.supplyLegendaryMoney.legendary = legendary;
                         result.supplyLegendaryMoney.money = addition.online;

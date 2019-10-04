@@ -7,7 +7,13 @@ class WaterPlant extends Building{
     }
 
     initBuffs(){
-        this.buffs.push(new Buff(BuffRange.Offline,BuffRange.Offline,1));
+        this.buffs.push(new Buff(BuffRange.Offline,BuffRange.Offline,0.05));
+    }
+
+    getBuffValue(buff) {
+        //水厂的buff也比较特殊，0.1/0.15/0.2/0.25/0.3
+        //可能有错
+        return super.getBuffValue(buff) + 0.05;
     }
 }
 

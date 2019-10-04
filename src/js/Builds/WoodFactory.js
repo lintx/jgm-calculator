@@ -1,6 +1,6 @@
 import {Building, BuildingRarity, BuildingType} from "../Building";
 import {Buff, BuffRange} from "../Buff";
-import VegetableMarket from "./VegetableMarket";
+import Chalet from "./Chalet";
 
 class WoodFactory extends Building{
     constructor(){
@@ -8,7 +8,7 @@ class WoodFactory extends Building{
     }
 
     initBuffs(){
-        this.buffs.push(new Buff(BuffRange.Targets,new VegetableMarket().BuildingName,1));
+        this.buffs.push(new Buff(BuffRange.Targets,new Chalet().BuildingName,1));
     }
 }
 

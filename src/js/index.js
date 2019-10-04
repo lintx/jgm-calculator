@@ -1,3 +1,4 @@
+import Vue from "vue";
 import {BuildingRarity, BuildingType} from "./Building";
 import Chalet from "./Builds/Chalet";
 import SteelStructureHouse from "./Builds/SteelStructureHouse";
@@ -29,12 +30,18 @@ import TextileMill from "./Builds/TextileMill";
 import PartsFactory from "./Builds/PartsFactory";
 import TencentMachinery from "./Builds/TencentMachinery";
 import PeoplesOil from "./Builds/PeoplesOil";
-import "../css/index.scss";
 import {Buff, BuffRange, Buffs, BuffSource} from "./Buff";
+import BootstrapVue from "bootstrap-vue";
+import PortalVue from 'portal-vue'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
+import "../css/index.scss";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.6";
+let version = "0.7";
+
+Vue.use(BootstrapVue);
+Vue.use(PortalVue);
 
 let app = new Vue({
     el:"#app",
@@ -52,7 +59,10 @@ let app = new Vue({
         let data = {
             version:version,
             rarity:BuildingRarity,
-            supplyStep50:false,
+            config:{
+                supplyStep50:false,
+                allBuildingLevel1:false
+            },
             buildings:[
                 {
                     type:BuildingType.Residence,
@@ -217,9 +227,7 @@ let app = new Vue({
                 worker.postMessage({
                     list:list,
                     buff:this.buffs,
-                    config:{
-                        supplyStep50:this.supplyStep50
-                    }
+                    config:this.config
                 });
             } else {
                 //抱歉! Web Worker 不支持
@@ -259,10 +267,39 @@ let app = new Vue({
             });
 
             localStorage.setItem(storage_key,JSON.stringify(config));
+
+            this.$bvToast.toast('配置保存成功', {
+                title: '提示',
+                variant: 'success',//danger,warning,info,primary,secondary,default
+                solid: true
+            });
         },
         clear:function () {
-            localStorage.removeItem(storage_key);
-            Object.assign(this.$data, this.$options.data());
+            this.$bvModal.msgBoxConfirm('是否要清除本地存档？清除后不可恢复，请谨慎操作！', {
+                title: '请确认',
+                size: 'sm',
+                buttonSize: 'sm',
+                okVariant: 'danger',
+                okTitle: '确认',
+                cancelTitle: '取消',
+                footerClass: 'p-2',
+                hideHeaderClose: false,
+                centered: true
+            }).then(value => {
+                if (value){
+                    localStorage.removeItem(storage_key);
+                    Object.assign(this.$data, this.$options.data());
+
+                    this.$bvToast.toast('配置已清除', {
+                        title: '提示',
+                        variant: 'success',//danger,warning,info,primary,secondary,default
+                        solid: true
+                    });
+                }
+            })
+                .catch(err => {
+
+                });
         },
         stop:function () {
             try {
@@ -272,6 +309,19 @@ let app = new Vue({
             }catch (e) {
 
             }
+        },
+        export(){
+            const h = this.$createElement;
+            const titleVNode = h('div', { domProps: { innerHTML: '导出配置' } });
+            const messageVNode = h('div', { class: ['foobar'] }, [
+                h('p',{},['配置内容'])
+            ]);
+            this.$bvModal.msgBoxOk([messageVNode], {
+                title: [titleVNode],
+                buttonSize: 'sm',
+                okTitle: '确认',
+                centered: true, size: 'sm'
+            })
         }
     }
 });

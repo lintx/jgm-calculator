@@ -11,7 +11,7 @@ class SmallApartment extends Building{
     }
 
     getBuffValue(buff) {
-        //TODO:这里的公式可能有错误
+        //小型公寓的buff也比较特殊，0.1/0.25/0.4/0.55/0.7
         return super.getBuffValue(buff) - 0.05;
     }
 }
