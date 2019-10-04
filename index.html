@@ -66,7 +66,7 @@
                             <td class="text-center text-nowrap">{{buff.target}}</td>
                             <td>
                                 <div class="input-group input-group-sm">
-                                    <input @focus="$event.target.select()" v-model="buff.buff" type="number" class="form-control text-right">
+                                    <input @focus="$event.target.select()" v-model.number="buff.buff" type="number" class="form-control text-right">
                                     <div class="input-group-append">
                                         <span class="input-group-text">%</span>
                                     </div>
@@ -85,6 +85,7 @@
                         <ul>
                             <li>勾选禁用表示在计算时不计算这个建筑，禁用多个建筑可以显著缩短计算时间。</li>
                             <li>任务加成指的是城市任务中，对单个建筑的buff，没有的话全部填0，有的话在对应建筑后面填写对应的buff值。</li>
+                            <li>填写建筑等级时，按上/下箭头可以+/-1级，按Ctrl+上/下箭头可以+/-10级，按shift+上/下箭头可以+/-100级，按PageUp/PageDown可以+/-1000级。</li>
                         </ul>
                     </div>
                 </div>
@@ -109,7 +110,7 @@
                                 </div>
                             </td>
                             <td>
-                                <select v-model="item.star" class="form-control form-control-sm">
+                                <select v-model.number="item.star" class="form-control form-control-sm">
                                     <option value="0">无</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
@@ -121,8 +122,8 @@
                             <td class="text-center">
                                 <input
                                         @focus="$event.target.select()"
-                                        @keydown.prevent="levelKeyDown($event,item)"
-                                        v-model="item.level"
+                                        @keydown="levelKeyDown($event,item)"
+                                        v-model.number="item.level"
                                         type="number"
                                         min="1"
                                         max="2000"
@@ -132,7 +133,7 @@
                             </td>
                             <td>
                                 <div class="input-group input-group-sm">
-                                    <input @focus="$event.target.select()" v-model="item.quest" type="number" class="form-control text-right">
+                                    <input @focus="$event.target.select()" v-model.number="item.quest" type="number" class="form-control text-right">
                                     <div class="input-group-append">
                                         <span class="input-group-text">%</span>
                                     </div>

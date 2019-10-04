@@ -1,4 +1,4 @@
-## 家国梦计算器 V0.8
+## 家国梦计算器 V0.9
 
 在线使用
 [https://lintx.github.io/jgm-calculator/index.html](https://lintx.github.io/jgm-calculator/index.html)
@@ -11,4 +11,3 @@
 [https://github.com/euyuil/JiaGuoMengCalculator](https://github.com/euyuil/JiaGuoMengCalculator)
 
 <img src="./screenshot/screenshot.png" style="zoom:40%" />
-<img src="./screenshot/games.png" style="zoom:40%" />

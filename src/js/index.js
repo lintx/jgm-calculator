@@ -38,7 +38,7 @@ import "../css/index.scss";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.8";
+let version = "0.9";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
@@ -341,7 +341,10 @@ let app = new Vue({
                 item.level += 1000;
             }else if (e.code==="PageDown"){
                 item.level -= 1000;
+            }else {
+                return;
             }
+            e.preventDefault();
             item.level = Math.min(2000,item.level);
             item.level = Math.max(1,item.level);
         },
