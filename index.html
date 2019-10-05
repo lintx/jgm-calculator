@@ -9,235 +9,314 @@
 </head>
 <body>
     <div id="app" class="container">
-        <div class="alert alert-info mb-4 mt-4" role="alert">
-            <h1 class="alert-heading">家国梦计算器 <small>v{{version}}</small></h1>
-            <p>计算家国梦建筑最优摆放策略</p>
-            <p>
-                <a href="https://bbs.nga.cn/read.php?tid=18759532&_ff=678" target="_blank">NGA帖子</a>
-                <a href="https://github.com/lintx/jgm-calculator" target="_blank">Github地址</a>
-            </p>
-        </div>
-        <div>
-            <h3 class="mb-3">政策、游记及任务加成配置</h3>
-            <div class="row mb-5">
-                <div class="col-12">
-                    <div class="alert alert-info" role="alert">
-                        <h4 class="alert-heading">提示</h4>
-                        <ul>
-                            <li>国庆“分享助力”buff和金钱、供货都没有关系，不要填写。</li>
-                            <li>政策加成建议将政策中心内所有已研究的项目按各分类累加后填写，这样可以计算精准数值。</li>
-                            <li>查看游记加成：切换到家国之光，点击“中国游记”卡片右上角的星星即可查看。</li>
-                            <li>城市任务加成可以点击主界面左下角的“城市任务”后查看，也可以在主界面右上角的buff栏查看（buff名和当前阶段城市任务一致）。</li>
-                            <li>城市任务对单个建筑的buff，在下面的建筑配置中填写。</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-12 mb-3">
-                    <div class="form-check">
-                        <input v-model="config.policy.stage1" class="form-check-input" type="checkbox" value="" id="policy_stage1">
-                        <label class="form-check-label" for="policy_stage1">
-                            第一阶段政策是否完成（勾选后填写政策buff时不要计算第一阶段政策）
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input v-model="config.policy.stage2" class="form-check-input" type="checkbox" value="" id="policy_stage2">
-                        <label class="form-check-label" for="policy_stage2">
-                            第二阶段政策是否完成（勾选后填写政策buff时不要计算第二阶段政策）
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input v-model="config.policy.stage3" class="form-check-input" type="checkbox" value="" id="policy_stage3">
-                        <label class="form-check-label" for="policy_stage3">
-                            第三阶段政策是否完成（勾选后填写政策buff时不要计算第三阶段政策）
-                        </label>
-                    </div>
-                </div>
-                <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4" v-for="buffSource in buffs">
-                    <h5>{{buffSource.type}}</h5>
-                    <table class="table table-bordered table-sm">
-                        <thead>
-                        <tr>
-                            <th class="text-center">加成类型</th>
-                            <th class="text-center">加成比例</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="buff in buffSource.list">
-                            <td class="text-center text-nowrap">{{buff.target}}</td>
-                            <td>
-                                <div class="input-group input-group-sm">
-                                    <input @focus="$event.target.select()" v-model.number="buff.buff" type="number" class="form-control text-right">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">%</span>
-                                    </div>
+        <h1 class="bd-title" id="content">家国梦计算器 <small>v{{version}}</small></h1>
+        <p class="bd-lead">计算家国梦建筑最优摆放策略</p>
+        <p class="bd-lead">
+            <a href="https://bbs.nga.cn/read.php?tid=18759532&_ff=678" target="_blank">NGA帖子</a>
+            <a href="https://github.com/lintx/jgm-calculator" target="_blank">Github地址</a>
+        </p>
+
+        <b-card no-body class="mb-4">
+            <b-card-header header-tag="header" class="p-1" role="tab">
+                <b-button href="#" variant="link" @click="config.showBuffConfig = !config.showBuffConfig">政策、游记及任务加成配置</b-button>
+            </b-card-header>
+            <b-collapse v-model="config.showBuffConfig">
+                <b-card-body>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-info" role="alert">
+                                <h4 class="alert-heading">提示</h4>
+                                <ul>
+                                    <li>国庆“分享助力”buff和金钱、供货都没有关系，不要填写。</li>
+                                    <li>查看游记加成：切换到家国之光，点击“中国游记”卡片右上角的星星即可查看。</li>
+                                    <li>城市任务加成可以点击主界面左下角的“城市任务”后查看，也可以在主界面右上角的buff栏查看（buff名和当前阶段城市任务一致）。</li>
+                                    <li>城市任务对单个建筑的buff，在下面的建筑配置中填写。</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <div class="input-group input-group-sm mb-3">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text">当前政策阶段:</label>
                                 </div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <h3 class="mb-3">建筑配置</h3>
-            <div class="row mb-5">
-                <div class="col-12">
-                    <div class="alert alert-info" role="alert">
-                        <h4 class="alert-heading">提示</h4>
-                        <ul>
-                            <li>勾选禁用表示在计算时不计算这个建筑，禁用多个建筑可以显著缩短计算时间。</li>
-                            <li>任务加成指的是城市任务中，对单个建筑的buff，没有的话全部填0，有的话在对应建筑后面填写对应的buff值。</li>
-                            <li>填写建筑等级时，按上/下箭头可以+/-1级，按Ctrl+上/下箭头可以+/-10级，按shift+上/下箭头可以+/-100级，按PageUp/PageDown可以+/-1000级。</li>
-                        </ul>
-                    </div>
-                </div>
-                <div v-for="types in buildings" class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4">
-                    <h5>{{types.type}}</h5>
-                    <table class="table table-bordered table-sm">
-                        <thead>
-                        <tr>
-                            <th class="text-center text-nowrap">名称</th>
-                            <th class="text-center text-nowrap">禁用</th>
-                            <th class="text-center text-nowrap">星级</th>
-                            <th class="text-center text-nowrap">等级</th>
-                            <th class="text-center text-nowrap">任务加成</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="item in types.list" :class="[{ 'table-primary': item.rarity===rarity.Common }, { 'table-rare': item.rarity===rarity.Rare },{ 'table-warning': item.rarity===rarity.Legendary }]">
-                            <td class="text-nowrap text-center" v-b-tooltip.hover.html.v-info :title="item.tooltip">{{item.BuildingName}}</td>
-                            <td class="text-center">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" v-model="item.disabled">
-                                </div>
-                            </td>
-                            <td>
-                                <select v-model.number="item.star" class="form-control form-control-sm">
-                                    <option value="0">无</option>
-                                    <option value="1">1</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                    <option value="4">4</option>
-                                    <option value="5">5</option>
+                                <select v-model.number="policy.step" class="custom-select">
+                                    <option v-for="i in 10" :value="i">第 {{i}} 阶段</option>
                                 </select>
-                            </td>
-                            <td class="text-center">
-                                <input
-                                        @focus="$event.target.select()"
-                                        @keydown="levelKeyDown($event,item)"
-                                        v-model.number="item.level"
-                                        type="number"
-                                        min="1"
-                                        max="2000"
-                                        step="1"
-                                        class="form-control text-right form-control-sm calculator-level"
-                                >
-                            </td>
-                            <td>
-                                <div class="input-group input-group-sm">
-                                    <input @focus="$event.target.select()" v-model.number="item.quest" type="number" class="form-control text-right">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">%</span>
-                                    </div>
+                            </div>
+                            <div class="input-group input-group-sm mb-3" v-for="level in policy.levels">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text">{{level.title}} 等级:</label>
                                 </div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <h3 class="mb-3">其他配置</h3>
-            <div class="mb-5 row">
-                <div class="col-12">
-                    <div class="form-check">
-                        <input v-model="config.supplyStep50" class="form-check-input" type="checkbox" value="" id="supplyStep50">
-                        <label class="form-check-label" for="supplyStep50">
-                            供货计算以每50%为一级
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input v-model="config.allBuildingLevel1" class="form-check-input" type="checkbox" value="" id="allBuildingLevel1">
-                        <label class="form-check-label" for="allBuildingLevel1">
-                            全部建筑按1级计算收益
-                        </label>
-                    </div>
-                </div>
-                <div class="col-12">
-                    <div class="alert alert-info" role="alert">
-                        <h4 class="alert-heading">提示</h4>
-                        <ul>
-                            <li>供货加成在1-49之间时，虽然不能增加红包、相册获取数量，但是能增加蓝币、金币、贡献的数量，所以不建议开启供货计算50%。</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <h3 class="mb-3">操作</h3>
-            <div class="mb-5">
-                <button type="button" @click="calculation" :disabled="calculationIng" :class="{disabled:calculationIng}" class="btn btn-primary">{{calculationIng?"计算中...":"计算结果"}}</button>
-                <button type="button" @click="save" :disabled="calculationIng" :class="{disabled:calculationIng}" class="btn btn-success">保存参数</button>
-                <button type="button" @click="clear" :disabled="calculationIng" :class="{disabled:calculationIng}" class="btn btn-danger">清除存档</button>
-                <button type="button" @click="stop" v-if="calculationIng" class="btn btn-danger">停止计算</button>
-            </div>
-            <h3 class="mb-3">结果</h3>
-            <div class="row">
-                <div class="col-12" v-if="calculationIng">
-                    <div class="alert alert-info" role="alert">
-                        <h4 class="alert-heading">正在计算，请稍候...</h4>
-                        <div class="progress">
-                            <div class="progress-bar progress-bar-striped bg-info progress-bar-animated" role="progressbar" :style="{ width:  progress + '%' }">{{progress}}%</div>
+                                <select v-model.number="level.level" class="custom-select">
+                                    <option v-for="i in 5" :value="i">{{i}} 级</option>
+                                </select>
+                            </div>
+
+
+                            <div class="input-group input-group-sm mb-3">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text">家国之光加成:</label>
+                                </div>
+                                <input @focus="$event.target.select()" v-model.number="config.shineChinaBuff" type="number" class="form-control">
+                                <div class="input-group-append">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4" v-for="buffSource in buffs">
+                            <h5>{{buffSource.type}}</h5>
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">加成类型</th>
+                                    <th class="text-center">加成比例</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr v-for="buff in buffSource.list">
+                                    <td class="text-center text-nowrap">{{buff.target}}</td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input @focus="$event.target.select()" v-model.number="buff.buff" type="number" class="form-control text-right">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </div>
-                <div class="col-12" v-if="!calculationIng && programs.length==0">
-                    <div class="alert alert-info" role="alert">
-                        <h4 class="alert-heading">点击上面的“计算结果”并等待计算完毕后查看</h4>
+                </b-card-body>
+            </b-collapse>
+        </b-card>
+
+        <b-card no-body class="mb-4">
+            <b-card-header header-tag="header" class="p-1" role="tab">
+                <b-button href="#" variant="link" @click="config.showBuildingConfig = !config.showBuildingConfig">建筑配置</b-button>
+            </b-card-header>
+            <b-collapse v-model="config.showBuildingConfig">
+                <b-card-body>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-info" role="alert">
+                                <h4 class="alert-heading">提示</h4>
+                                <ul>
+                                    <li>勾选禁用表示在计算时不计算这个建筑，禁用多个建筑可以显著缩短计算时间。</li>
+                                    <li>任务加成指的是城市任务中，对单个建筑的buff，没有的话全部填0，有的话在对应建筑后面填写对应的buff值。</li>
+                                    <li>填写建筑等级时，按上/下箭头可以+/-1级，按Ctrl+上/下箭头可以+/-10级，按shift+上/下箭头可以+/-100级，按PageUp/PageDown可以+/-1000级。</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div v-for="types in buildings" class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4">
+                            <h5>{{types.type}}</h5>
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                <tr>
+                                    <th class="text-center text-nowrap">名称</th>
+                                    <th class="text-center text-nowrap">禁用</th>
+                                    <th class="text-center text-nowrap">星级</th>
+                                    <th class="text-center text-nowrap">等级</th>
+                                    <th class="text-center text-nowrap">任务加成</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr v-for="item in types.list" :class="[{ 'table-primary': item.rarity===rarity.Common }, { 'table-rare': item.rarity===rarity.Rare },{ 'table-warning': item.rarity===rarity.Legendary }]">
+                                    <td class="text-nowrap text-center" v-b-tooltip.hover.html.v-info :title="item.tooltip">{{item.BuildingName}}</td>
+                                    <td class="text-center">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" v-model="item.disabled">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <select v-model.number="item.star" class="form-control form-control-sm">
+                                            <option value="0">无</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-center">
+                                        <input
+                                                @focus="$event.target.select()"
+                                                @keydown="levelKeyDown($event,item)"
+                                                v-model.number="item.level"
+                                                type="number"
+                                                min="1"
+                                                max="2000"
+                                                step="1"
+                                                class="form-control text-right form-control-sm calculator-level"
+                                        >
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input @focus="$event.target.select()" v-model.number="item.quest" type="number" class="form-control text-right">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </b-card-body>
+            </b-collapse>
+        </b-card>
+
+        <b-card no-body class="mb-4">
+            <b-card-header header-tag="header" class="p-1" role="tab">
+                <b-button href="#" variant="link" @click="config.showOtherConfig = !config.showOtherConfig">其他配置</b-button>
+            </b-card-header>
+            <b-collapse v-model="config.showOtherConfig">
+                <b-card-body>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input v-model="config.supplyStep50" class="form-check-input" type="checkbox" value="" id="supplyStep50">
+                                <label class="form-check-label" for="supplyStep50">
+                                    供货计算以每50%为一级
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input v-model="config.allBuildingLevel1" class="form-check-input" type="checkbox" value="" id="allBuildingLevel1">
+                                <label class="form-check-label" for="allBuildingLevel1">
+                                    全部建筑按1级计算收益
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="alert alert-info" role="alert">
+                                <h4 class="alert-heading">提示</h4>
+                                <ul>
+                                    <li>如果勾选供货计算以每50%为一级则0%-49%供货视为供货buff相同，50%-99%等同理，供货加成在1-49之间时，虽然不能增加红包、相册获取数量，但是能增加蓝币、金币、贡献的数量，所以不建议开启供货计算50%。</li>
+                                    <li>如果勾选全部建筑按1级计算收益，则计算出的是通用最优解，不会受到比如某个建筑等级太高/太低的影响导致的偏差，极端情况比如你通用最优解中的某个建筑的等级太低，那么勾选后计算的结果和不勾选计算的结果不一样，这时按勾选后计算的结果来补等级后，最终受益会更高。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </b-card-body>
+            </b-collapse>
+        </b-card>
+
+        <div no-body class="mb-4 card">
+            <header header-tag="header" class="card-header" role="tab">操作</header>
+            <div class="collapse show">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="mb-3 col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4">
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">配置名</span>
+                                </div>
+                                <input type="text" class="form-control" v-model="config.configName" placeholder="配置名">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" @click="save">保存配置</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4">
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text">选择配置:</label>
+                                </div>
+                                <select v-model.number="selectConfigIndex" class="custom-select">
+                                    <option v-for="(c,i) in localConfigList" :value="i">{{c}}</option>
+                                </select>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" @click="switchConfig()" v-b-tooltip.hover.v-info title="切换到选中的存档">切换</button>
+                                    <button type="button" @click="removeConfig" class="btn btn-danger" v-b-tooltip.hover.v-info title="删除选中的存档">删除</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4">
+                            <button type="button" @click="exportConfig" class="btn btn-info btn-sm" v-b-tooltip.hover.v-info title="导出所有本地存档数据（JSON格式）">导出</button>
+                            <button type="button" @click="importConfig" class="btn btn-info btn-sm" v-b-tooltip.hover.v-info title="导入数据存档到本地（合并导入）">导入</button>
+                            <button type="button" @click="addConfig" class="btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="新增一个本地存档">新增</button>
+                            <button type="button" @click="clear" class="btn btn-danger btn-sm" v-b-tooltip.hover.v-info title="清除所有本地存档">清除</button>
+                        </div>
+                    </div>
+                    <div>
+                        <button type="button" @click="calculation" :disabled="calculationIng" :class="{disabled:calculationIng}" class="btn btn-primary">{{calculationIng?"计算中...":"计算结果"}}</button>
+                        <button type="button" @click="stop" v-if="calculationIng" class="btn btn-danger">停止计算</button>
                     </div>
                 </div>
-                <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-3 mb-4" v-for="program in programs">
-                    <div class="card border-info">
-                        <table class="table table-sm">
-                            <thead>
-                            <tr>
-                                <th class="text-center">在线</th>
-                                <th class="text-center" colspan="2">{{program.addition.online}}/秒</th>
-                            </tr>
-                            <tr>
-                                <th class="text-center">离线</th>
-                                <th class="text-center" colspan="2">{{program.addition.offline}}/秒</th>
-                            </tr>
-                            <tr>
-                                <th class="text-center">供货</th>
-                                <th class="text-center" colspan="2">{{program.addition.supply}}%</th>
-                            </tr>
-                            <tr>
-                                <th class="text-center">建筑</th>
-                                <th class="text-center">在线</th>
-                                <th class="text-center">离线</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr v-for="building in program.addition.buildings"
-                                :class="[
+            </div>
+        </div>
+
+        <div no-body class="mb-4 card">
+            <header header-tag="header" class="card-header" role="tab">结果</header>
+            <div class="collapse show">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12" v-if="calculationIng">
+                            <div class="alert alert-info" role="alert">
+                                <h4 class="alert-heading">正在计算，请稍候...</h4>
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped bg-info progress-bar-animated" role="progressbar" :style="{ width:  progress + '%' }">{{progress}}%</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12" v-if="!calculationIng && programs.length==0">
+                            <div class="alert alert-info" role="alert">
+                                <h4 class="alert-heading">点击上面的“计算结果”并等待计算完毕后查看</h4>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-3 mb-4" v-for="program in programs">
+                            <div class="card border-info">
+                                <table class="table table-sm">
+                                    <thead>
+                                    <tr>
+                                        <th class="text-center">在线</th>
+                                        <th class="text-center" colspan="2">{{program.addition.online}}/秒</th>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-center">离线</th>
+                                        <th class="text-center" colspan="2">{{program.addition.offline}}/秒</th>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-center">供货</th>
+                                        <th class="text-center" colspan="2">{{program.addition.supply}}%</th>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-center">建筑</th>
+                                        <th class="text-center">在线</th>
+                                        <th class="text-center">离线</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr v-for="building in program.addition.buildings"
+                                        :class="[
                                  { 'table-primary': building.building.rarity===rarity.Common },
                                  { 'table-rare': building.building.rarity===rarity.Rare },
                                  { 'table-warning': building.building.rarity===rarity.Legendary }
                                  ]"
-                                v-b-tooltip.hover.html.v-info :title="building.building.tooltip"
-                            >
-                                <td class="text-nowrap text-center">{{building.building.BuildingName}}</td>
-                                <td class="text-center">{{building.online}}/秒</td>
-                                <td class="text-center">{{building.offline}}/秒</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <div class="card-body">
-                            <h5 class="card-title">{{program.title}}</h5>
-                            <p class="card-text">
-                                升级建议：升级
-                                <span class="badge" :class="[{ 'badge-primary': program.addition.upgrade.building.rarity===rarity.Common }, { 'badge-rare': program.addition.upgrade.building.rarity===rarity.Rare },{ 'badge-warning': program.addition.upgrade.building.rarity===rarity.Legendary }]" v-b-tooltip.hover.html.v-info :title="program.addition.upgrade.building.tooltip">{{program.addition.upgrade.building.BuildingName}}</span>
-                                直到
-                                <span class="badge badge-info">{{program.addition.upgrade.toLevel}}</span>
-                                级，然后升级
-                                <span class="badge" :class="[{ 'badge-primary': program.addition.upgrade.nextBuilding.rarity===rarity.Common }, { 'badge-rare': program.addition.upgrade.nextBuilding.rarity===rarity.Rare },{ 'badge-warning': program.addition.upgrade.nextBuilding.rarity===rarity.Legendary }]" v-b-tooltip.hover.html.v-info :title="program.addition.upgrade.nextBuilding.tooltip">{{program.addition.upgrade.nextBuilding.BuildingName}}</span>
-                            </p>
+                                        v-b-tooltip.hover.html.v-info :title="building.building.tooltip"
+                                    >
+                                        <td class="text-nowrap text-center">{{building.building.BuildingName}}</td>
+                                        <td class="text-center">{{building.online}}/秒</td>
+                                        <td class="text-center">{{building.offline}}/秒</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <div class="card-body">
+                                    <h5 class="card-title">{{program.title}}</h5>
+                                    <p class="card-text">
+                                        升级建议：升级
+                                        <span class="badge" :class="[{ 'badge-primary': program.addition.upgrade.building.rarity===rarity.Common }, { 'badge-rare': program.addition.upgrade.building.rarity===rarity.Rare },{ 'badge-warning': program.addition.upgrade.building.rarity===rarity.Legendary }]" v-b-tooltip.hover.html.v-info :title="program.addition.upgrade.building.tooltip">{{program.addition.upgrade.building.BuildingName}}</span>
+                                        直到
+                                        <span class="badge badge-info">{{program.addition.upgrade.toLevel}}</span>
+                                        级，然后升级
+                                        <span class="badge" :class="[{ 'badge-primary': program.addition.upgrade.nextBuilding.rarity===rarity.Common }, { 'badge-rare': program.addition.upgrade.nextBuilding.rarity===rarity.Rare },{ 'badge-warning': program.addition.upgrade.nextBuilding.rarity===rarity.Legendary }]" v-b-tooltip.hover.html.v-info :title="program.addition.upgrade.nextBuilding.tooltip">{{program.addition.upgrade.nextBuilding.BuildingName}}</span>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

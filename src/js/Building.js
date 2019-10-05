@@ -1,5 +1,6 @@
 import {BuffRange, BuffSource} from "./Buff";
 import {getIncome} from "./Level";
+import {renderSize} from "./Utils";
 
 
 class Building{
@@ -26,6 +27,7 @@ class Building{
         this.buffs.forEach((buff)=>{
             tooltip.push(buff.target + "的收入增加 " + Math.round(this.getBuffValue(buff) * 100) + "%");
         });
+        tooltip.push("基础收益：" + this.baseMoney + "*" + this.multiple + "*" + renderSize(getIncome(this.level)) + "=" + renderSize(this.money));
         return tooltip.join("<br />");
     }
 

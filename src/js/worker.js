@@ -31,10 +31,12 @@ import TencentMachinery from "./Builds/TencentMachinery";
 import PeoplesOil from "./Builds/PeoplesOil";
 import {BuildingRarity} from "./Building";
 import {getCost} from "./Level";
+import {getFlagArrs, renderSize} from "./Utils";
+import {getPolicy} from "./Policy";
 
 onmessage = function (e) {
     let data = e.data;
-    calculation(data.list,data.buff,data.config);
+    calculation(data.list,data.policy,data.buff,data.config);
 };
 
 let buildings = [
@@ -73,7 +75,7 @@ buildings.forEach((item)=>{
     item.initBuffs();
 });
 
-function calculation(list,buff,config) {
+function calculation(list,policy,buff,config) {
     let programs = [];
     list.forEach(function (building) {
         let program = [];
@@ -143,6 +145,31 @@ function calculation(list,buff,config) {
         }
     };
 
+    //全局的buff
+    let globalBuffs = new Buffs();
+    buff.forEach(function (source) {
+        source.list.forEach(function (buff) {
+            globalBuffs.add(source.type,new Buff(buff.range,buff.target,buff.buff));
+        });
+    });
+    if (config.shineChinaBuff>0){
+        globalBuffs.add(BuffSource.Policy,new Buff(BuffRange.Global,BuffRange.Global,config.shineChinaBuff));
+    }
+    for (let i=1;i<=policy.step;i++){
+        getPolicy(i).policys.forEach((p)=>{
+            let level = 5;
+            if (i===policy.step){
+                policy.levels.forEach((l)=>{
+                    if (p.title===l.title){
+                        level = l.level;
+                        return true;
+                    }
+                })
+            }
+            globalBuffs.add(BuffSource.Policy,p.buff(level));
+        })
+    }
+
     let progressFull = programs[0].length;
     programs[0].forEach(function (val1,i1) {
         postMessage({
@@ -160,28 +187,12 @@ function calculation(list,buff,config) {
                 };
 
                 let buffs = new Buffs();
-                buff.forEach(function (source) {
-                    source.list.forEach(function (buff) {
-                        buffs.add(source.type,new Buff(buff.range,buff.target,buff.buff));
-                    });
+                buffs.Policy = globalBuffs.Policy;
+                buffs.Photo = globalBuffs.Photo;
+                //任务加成因为可能会添加特定建筑的加成，所以不能直接引用
+                globalBuffs.Quest.forEach((b)=>{
+                    buffs.add(BuffSource.Quest,b);
                 });
-                if (config.policy.stage1){
-                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Global,BuffRange.Global,100));//一带一路建设
-                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Business,BuffRange.Business,300));//自由贸易区建设
-                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Residence,BuffRange.Residence,300));//区域协调发展
-                }
-                if (config.policy.stage2){
-                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Global,BuffRange.Global,200));//全面深化改革
-                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Online,BuffRange.Online,200));//全面依法治国
-                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Offline,BuffRange.Offline,200));//科教兴国
-                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Industrial,BuffRange.Industrial,600));//创新驱动
-                }
-                if (config.policy.stage3){
-                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Industrial,BuffRange.Industrial,1200));//制造强国
-                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Supply,BuffRange.Supply,30));//优化营商环境
-                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Global,BuffRange.Global,400));//减税降费
-                    buffs.add(BuffSource.Policy,new Buff(BuffRange.Business,BuffRange.Business,1200));//普惠金融
-                }
 
                 let legendary = 0;
                 let rare = 0;
@@ -430,68 +441,4 @@ function upgradeBenefit(online,building,buffs) {
         online:addition[BuffRange.Online],
         benefit:addOnline/cost
     };
-}
-
-function renderSize(value){
-    if(null===value||value===''){
-        return "0";
-    }
-    let unitArr = ["","K","M","B","T","aa","bb","cc","dd","ee","ff","gg","hh","ii","jj","kk","ll","mm","nn","oo","pp","qq","rr","ss","tt","uu","vv","ww","xx","yy","zz"];
-    let index=0,
-        srcsize = parseFloat(value);
-    index=Math.floor(Math.log(srcsize)/Math.log(1000));
-    let size =srcsize/Math.pow(1000,index);
-    //  保留的小数位数
-    if (size>=100){
-        size = Math.round(size);
-    }else if (size>=10){
-        size = size.toFixed(1);
-    }else {
-        size = size.toFixed(2);
-    }
-    let unit = unitArr[index];
-    if (unit===undefined){
-        unit = "E" + index * 3;
-    }
-    return size + unit;
-}
-
-function getFlagArrs(m, n) {
-    if(!n || n < 1) {
-        return [];
-    }
-    let resultArrs = [],
-        flagArr = [],
-        isEnd = false,
-        i, j, leftCnt;
-
-    for (i = 0; i < m; i++) {
-        flagArr[i] = i < n ? 1 : 0;
-    }
-
-    resultArrs.push(flagArr.concat());
-    if (m<=n){
-        return resultArrs;
-    }
-
-    while (!isEnd) {
-        leftCnt = 0;
-        for (i = 0; i < m - 1; i++) {
-            if (flagArr[i] === 1 && flagArr[i+1] === 0) {
-                for(j = 0; j < i; j++) {
-                    flagArr[j] = j < leftCnt ? 1 : 0;
-                }
-                flagArr[i] = 0;
-                flagArr[i+1] = 1;
-                let aTmp = flagArr.concat();
-                resultArrs.push(aTmp);
-                if(aTmp.slice(-n).join("").indexOf('0') === -1) {
-                    isEnd = true;
-                }
-                break;
-            }
-            flagArr[i] === 1 && leftCnt++;
-        }
-    }
-    return resultArrs;
 }

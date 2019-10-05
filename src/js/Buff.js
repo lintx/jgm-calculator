@@ -24,8 +24,8 @@ let BuffSource = {
     Policy:"政策加成",
     Photo:"游记加成",
     Quest:"任务加成",
-    Activity:"活动加成(如国庆buff)",
-    ShineChina:"家国之光"
+    Activity:"活动加成(如国庆buff)"//,
+    // ShineChina:"家国之光"
 };
 
 class Buffs {
@@ -41,7 +41,7 @@ class Buffs {
         switch (source) {
             case BuffSource.Policy:
             case BuffSource.Activity:
-            case BuffSource.ShineChina:
+            // case BuffSource.ShineChina:
                 this.Policy.push(b);
                 break;
             case BuffSource.Photo:

@@ -35,10 +35,11 @@ import BootstrapVue from "bootstrap-vue";
 import PortalVue from 'portal-vue'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import "../css/index.scss";
+import {getPolicy} from "./Policy";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.10";
+let version = "0.11";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
@@ -46,28 +47,20 @@ Vue.use(PortalVue);
 let app = new Vue({
     el:"#app",
     data:function () {
-        let config = null;
-        let storage = localStorage.getItem(storage_key);
-        if (storage!==null){
-            try {
-                config = JSON.parse(storage);
-            }catch (e) {
-
-            }
-        }
-
         let data = {
             version:version,
             rarity:BuildingRarity,
             config:{
                 supplyStep50:false,
                 allBuildingLevel1:false,
-                policy:{
-                    stage1:false,
-                    stage2:false,
-                    stage3:false
-                }
+                shineChinaBuff:0,
+                showBuffConfig:true,
+                showBuildingConfig:true,
+                showOtherConfig:true,
+                configName:""
             },
+            selectConfigIndex:0,
+            localConfigList:[],
             buildings:[
                 {
                     type:BuildingType.Residence,
@@ -116,13 +109,17 @@ let app = new Vue({
                 }
             ],
             buffs:[],
+            policy: {
+                step: 1,
+                levels: []
+            },
             programs:[],
             progress:0,
             calculationIng:false
         };
         Object.keys(BuffSource).forEach((key)=>{
             let source = BuffSource[key];
-            if (source===BuffSource.Building){
+            if (source===BuffSource.Building || source===BuffSource.Policy){
                 return;
             }
             let buff = {
@@ -144,6 +141,22 @@ let app = new Vue({
             });
         });
 
+        let localConfig = this.localConfig();
+        let config = null;
+        if (localConfig!==null && typeof localConfig==="object" && localConfig.hasOwnProperty("current") && typeof localConfig.current==="number"){
+            config = localConfig.config[localConfig.current] || null;
+            data.selectConfigIndex = localConfig.current;
+
+            localConfig.config.forEach((c,i)=>{
+                let name = "配置" + (i+1);
+                if (c.hasOwnProperty("config") && c.config.hasOwnProperty("configName") && c.config.configName!==""){
+                    name += "(" + c.config.configName + ")";
+                }
+                data.localConfigList.push(name);
+            });
+        }else {
+            config = localConfig;
+        }
         if (config!==null && typeof config==="object"){
             if (config.hasOwnProperty("building")){
                 let building = config.building;
@@ -187,9 +200,30 @@ let app = new Vue({
             if (config.hasOwnProperty("config")){
                 Object.assign(data.config, config.config);
             }
+            if (config.hasOwnProperty("policy")){
+                Object.assign(data.policy,config.policy);
+            }
+        }
+        if (!data.policy.levels || data.policy.levels.length<=0){
+            data.policy.levels = getPolicyLevelData(data.policy.step);
         }
 
         return data;
+    },
+    watch:{
+        "policy.step":function (val, oldVal) {
+            if (val!==oldVal){
+                let temp = getPolicyLevelData(val);
+                temp.forEach(l=>{
+                    this.policy.levels.forEach(pl=>{
+                        if (l.title===pl.title){
+                            l.level = pl.level;
+                        }
+                    });
+                });
+                this.policy.levels = temp;
+            }
+        }
     },
     methods:{
         calculation:function () {
@@ -259,17 +293,19 @@ let app = new Vue({
                 worker.postMessage({
                     list:list,
                     buff:this.buffs,
-                    config:this.config
+                    config:this.config,
+                    policy:this.policy
                 });
             } else {
                 //抱歉! Web Worker 不支持
             }
         },
-        save:function () {
+        getConfig:function(){
             let config = {
                 building:[],
                 buff:[],
-                config: this.config
+                config: this.config,
+                policy: this.policy
             };
             this.buildings.forEach(function (cls) {
                 cls.list.forEach(function (item) {
@@ -299,7 +335,33 @@ let app = new Vue({
                 config.buff.push(b);
             });
 
-            localStorage.setItem(storage_key,JSON.stringify(config));
+            let localConfig = this.localConfig();
+            if (localConfig!==null && typeof localConfig==="object" && localConfig.hasOwnProperty("current") && typeof localConfig.current==="number"){
+                localConfig.config = localConfig.config || [];
+                localConfig.config[localConfig.current] = config;
+            }else {
+                localConfig = {
+                    current:0,
+                    config:[config]
+                };
+            }
+
+            return JSON.stringify(localConfig);
+        },
+        localConfig:function(){
+            let config = null;
+            let storage = localStorage.getItem(storage_key);
+            if (storage!==null){
+                try {
+                    config = JSON.parse(storage);
+                }catch (e) {
+
+                }
+            }
+            return config;
+        },
+        save:function () {
+            localStorage.setItem(storage_key,this.getConfig());
 
             this.$bvToast.toast('配置保存成功', {
                 title: '提示',
@@ -333,6 +395,67 @@ let app = new Vue({
                 .catch(err => {
 
                 });
+        },
+        removeConfig:function(){
+            this.$bvModal.msgBoxConfirm('是否要删除配置 ' + this.localConfigList[this.selectConfigIndex] + ' ？删除后不可恢复，请谨慎操作！', {
+                title: '请确认',
+                size: 'sm',
+                buttonSize: 'sm',
+                okVariant: 'danger',
+                okTitle: '确认',
+                cancelTitle: '取消',
+                footerClass: 'p-2',
+                hideHeaderClose: false,
+                centered: true
+            }).then(value => {
+                if (value){
+                    let localConfig = this.localConfig();
+                    if (localConfig!==null && typeof localConfig==="object" && localConfig.hasOwnProperty("current") && typeof localConfig.current==="number"){
+                        localConfig.config = localConfig.config || [];
+                        localConfig.config.splice(this.selectConfigIndex,1);
+                        localConfig.current = 0;
+                        localStorage.setItem(storage_key,JSON.stringify(localConfig));
+                    }else {
+                        localStorage.removeItem(storage_key);
+                    }
+                    Object.assign(this.$data, this.$options.data());
+
+                    this.$bvToast.toast('配置已删除', {
+                        title: '提示',
+                        variant: 'success',//danger,warning,info,primary,secondary,default
+                        solid: true
+                    });
+                }
+            });
+        },
+        addConfig:function(){
+            this.$bvModal.msgBoxConfirm('是否要保存当前数据？', {
+                title: '请确认',
+                size: 'sm',
+                buttonSize: 'sm',
+                okVariant: 'danger',
+                okTitle: '确认',
+                cancelTitle: '取消',
+                footerClass: 'p-2',
+                hideHeaderClose: false,
+                centered: true
+            }).then(value => {
+                if (value){
+                    this.save();
+                }
+
+                let localConfig = this.localConfig();
+                if (localConfig!==null && typeof localConfig==="object" && localConfig.hasOwnProperty("current") && typeof localConfig.current==="number"){
+                    localConfig.current = localConfig.config.length;
+                }else {
+                    localConfig = {
+                        current:1,
+                        config:[config]
+                    };
+                }
+                localStorage.setItem(storage_key,JSON.stringify(localConfig));
+                Object.assign(this.$data, this.$options.data());
+            });
         },
         stop:function () {
             try {
@@ -371,18 +494,113 @@ let app = new Vue({
             item.level = Math.min(2000,item.level);
             item.level = Math.max(1,item.level);
         },
-        export(){
+        exportConfig(){
             const h = this.$createElement;
-            const titleVNode = h('div', { domProps: { innerHTML: '导出配置' } });
             const messageVNode = h('div', { class: ['foobar'] }, [
-                h('p',{},['配置内容'])
+                h('p',{},['请复制并保存下面的文本框内的内容']),
+                h('textarea',{class:['form-control'],attrs:{rows:8}},[this.getConfig()])
             ]);
             this.$bvModal.msgBoxOk([messageVNode], {
-                title: [titleVNode],
+                title: '导出配置',
                 buttonSize: 'sm',
                 okTitle: '确认',
-                centered: true, size: 'sm'
+                centered: true,
+                size: 'xl'
+            });
+        },
+        importConfig(){
+            const h = this.$createElement;
+            let json = "";
+            const messageVNode = h('div', { class: ['foobar'] }, [
+                h('p',{},['请在下面的文本框内粘贴配置内容，然后点击确认按钮']),
+                h('textarea',{class:['form-control'],attrs:{rows:8},on:{input:function (e) {
+                            json = e.target.value;
+                        }}},[])
+            ]);
+            this.$bvModal.msgBoxConfirm(messageVNode, {
+                title: '导入配置',
+                size: 'xl',
+                buttonSize: 'sm',
+                okVariant: 'success',
+                okTitle: '确认',
+                cancelTitle: '取消',
+                footerClass: 'p-2',
+                hideHeaderClose: false,
+                centered: true
+            }).then(value => {
+                if (value){
+                    try {
+                        let config = JSON.parse(json);
+                        if (typeof config!=="object"
+                            || !config.hasOwnProperty("current")
+                            || typeof config.current!=="number"
+                            || !config.hasOwnProperty("config")
+                            || !Array.isArray(config.config)){
+                            this.$bvToast.toast('无效的配置', {
+                                title: '提示',
+                                variant: 'danger',//danger,warning,info,primary,secondary,default
+                                solid: true
+                            });
+                            return;
+                        }
+                        let localConfig = this.localConfig();
+                        if (localConfig!==null && typeof localConfig==="object" && localConfig.hasOwnProperty("current") && typeof localConfig.current==="number"){
+                            localConfig.config = [...localConfig.config,...config.config];
+                        }else {
+                            localConfig = config;
+                        }
+                        localStorage.setItem(storage_key,JSON.stringify(localConfig));
+                        Object.assign(this.$data, this.$options.data());
+                        this.$bvToast.toast('配置导入成功', {
+                            title: '提示',
+                            variant: 'success',//danger,warning,info,primary,secondary,default
+                            solid: true
+                        });
+                    }catch (e) {
+                        this.$bvToast.toast('无效的配置', {
+                            title: '提示',
+                            variant: 'danger',//danger,warning,info,primary,secondary,default
+                            solid: true
+                        });
+                    }
+                }
             })
+        },
+        switchConfig:function () {
+            if (this.selectConfigIndex<0){
+                this.$bvToast.toast('无效的配置名', {
+                    title: '提示',
+                    variant: 'danger',//danger,warning,info,primary,secondary,default
+                    solid: true
+                });
+                return;
+            }
+            let localConfig = this.localConfig();
+            if (localConfig!==null && typeof localConfig==="object" && localConfig.hasOwnProperty("current") && typeof localConfig.current==="number"){
+                if (this.selectConfigIndex>=localConfig.config.length){
+                    this.$bvToast.toast('无效的配置名', {
+                        title: '提示',
+                        variant: 'danger',//danger,warning,info,primary,secondary,default
+                        solid: true
+                    });
+                    return;
+                }
+                localConfig.current = this.selectConfigIndex;
+            }else {
+                this.$bvToast.toast('本地配置无效，无法切换', {
+                    title: '提示',
+                    variant: 'danger',//danger,warning,info,primary,secondary,default
+                    solid: true
+                });
+                return;
+            }
+            localStorage.setItem(storage_key,JSON.stringify(localConfig));
+            Object.assign(this.$data, this.$options.data());
+            this.$bvToast.toast('配置切换成功', {
+                title: '提示',
+                variant: 'success',//danger,warning,info,primary,secondary,default
+                solid: true
+            });
         }
     }
 });
@@ -403,4 +621,16 @@ function getValidLevel(level) {
         return 2000;
     }
     return level;
+}
+
+function getPolicyLevelData(step) {
+    let policy = getPolicy(step);
+    let data = [];
+    policy.policys.forEach((p)=>{
+        data.push({
+            title:p.title,
+            level:1
+        });
+    });
+    return data;
 }
