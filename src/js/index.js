@@ -39,7 +39,7 @@ import {getPolicy} from "./Policy";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.11";
+let version = "0.12";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
