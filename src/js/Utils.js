@@ -1,8 +1,14 @@
+let unitArr = ["","K","M","B","T","aa","bb","cc","dd","ee","ff","gg","hh","ii","jj","kk","ll","mm","nn","oo","pp","qq","rr","ss","tt","uu","vv","ww","xx","yy","zz"];
+let lowUnitArr = [];
+unitArr.forEach(v=>{
+    lowUnitArr.push(v.toLowerCase());
+});
+
 function renderSize(value){
-    if(null===value||value===''){
+    if(null===value||value===''||value===0){
         return "0";
     }
-    let unitArr = ["","K","M","B","T","aa","bb","cc","dd","ee","ff","gg","hh","ii","jj","kk","ll","mm","nn","oo","pp","qq","rr","ss","tt","uu","vv","ww","xx","yy","zz"];
+
     let index=0,
         srcsize = parseFloat(value);
     index=Math.floor(Math.log(srcsize)/Math.log(1000));
@@ -20,6 +26,22 @@ function renderSize(value){
         unit = "E" + index * 3;
     }
     return size + unit;
+}
+
+function toNumber(value) {
+    if (!isNaN(value)){
+        return Number(value);
+    }
+    value = value.toLowerCase();
+    let arr = value.split(/^([\d\.]+)(.*)$/g);
+    if (arr.length!==4){
+        return 0;
+    }
+    let index = lowUnitArr.indexOf(arr[2]);
+    if (index===-1){
+        return 0;
+    }
+    return Number(arr[1]) * Math.pow(1000,index);
 }
 
 function getFlagArrs(m, n) {
@@ -64,5 +86,6 @@ function getFlagArrs(m, n) {
 
 export {
     renderSize,
-    getFlagArrs
+    getFlagArrs,
+    toNumber
 }

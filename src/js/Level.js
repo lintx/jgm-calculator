@@ -2003,6 +2003,18 @@ let levelData = {
     2000:{income:5.46E+26,commonCost:3.43E+39,rareCost:4.80E+39,legendaryCost:6.52E+39}
 };
 
+Object.keys(levelData).forEach(level=>{
+    level = Number(level);
+    if (level<2000){
+        let data = levelData[level];
+        let addMoney = getIncome(level+1) - data.income;
+        data.addMoney = addMoney;
+        data.commonBenefit = addMoney / data.commonCost;
+        data.rareBenefit = addMoney / data.rareCost;
+        data.legendaryBenefit = addMoney / data.legendaryCost;
+    }
+});
+
 function getIncome(level) {
     return levelData[level].income;
 }
@@ -2019,7 +2031,34 @@ function getCost(level, rarity) {
     return 0;
 }
 
+function getData(level, rarity) {
+    let result = {cost:0,benefit:0,income:0,addMoney:0};
+    let data = levelData[level];
+    if (!data){
+        return result;
+    }else {
+        result.income = data.income;
+        result.addMoney = data.addMoney || 0;
+    }
+    switch (rarity) {
+        case BuildingRarity.Common:
+            result.cost = data.commonCost;
+            result.benefit = data.commonBenefit || 0;
+            break;
+        case BuildingRarity.Rare:
+            result.cost = data.rareCost;
+            result.benefit = data.rareBenefit || 0;
+            break;
+        case BuildingRarity.Legendary:
+            result.cost = data.legendaryCost;
+            result.benefit = data.legendaryBenefit || 0;
+            break;
+    }
+    return result;
+}
+
 export {
     getIncome,
-    getCost
+    getCost,
+    getData
 }

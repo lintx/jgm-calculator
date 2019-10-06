@@ -8,7 +8,6 @@ class Building{
         this.disabled = false;
         this.level = 1;
         this.star = 0;
-        this.quest = 0;
         this.buffs = [];  //建筑加成
         this.BuildingName = name;
         this.rarity = rarity;
@@ -32,6 +31,7 @@ class Building{
     }
 
     calculation(buffs){
+        //即将废除
         let addition = {};
         let money = this.money;
         addition[BuffRange.Online] = money;
@@ -46,7 +46,30 @@ class Building{
     }
 
     get money(){
+        //即将废除
         return this.baseMoney * this.multiple * getIncome(this.level); //这里需要按等级计算，这是基础金钱收益
+    }
+
+    sumMoney(multiple){
+        let income = getIncome(this.level);
+        let money = {};
+        money[BuffRange.Online] = multiple[BuffRange.Online] * income;
+        money[BuffRange.Offline] = multiple[BuffRange.Offline] * income;
+        return money;
+    }
+
+    sumMultiple(buffs){
+        let m = this.baseMoney * this.multiple;
+        let multiple = {};
+        multiple[BuffRange.Online] = m;
+        multiple[BuffRange.Offline] = m / 2;
+        [BuffSource.Building,BuffSource.Policy,BuffSource.Photo,BuffSource.Quest].forEach((source)=>{
+            let buff = buffs.Calculation(source,this);
+            Object.keys(buff).forEach((range)=>{
+                multiple[range] *= buff[range];
+            });
+        });
+        return multiple;
     }
 
     get multiple(){

@@ -39,7 +39,7 @@ import {getPolicy} from "./Policy";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.12";
+let version = "0.13";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
@@ -57,7 +57,25 @@ let app = new Vue({
                 showBuffConfig:true,
                 showBuildingConfig:true,
                 showOtherConfig:true,
-                configName:""
+                configName:"",
+                questTargetBuff:[
+                    {
+                        building:"",
+                        buff:0
+                    },
+                    {
+                        building:"",
+                        buff:0
+                    },
+                    {
+                        building:"",
+                        buff:0
+                    }
+                ],
+                upgradeRecommend:{
+                    mode:1,
+                    value:"100"
+                }
             },
             selectConfigIndex:0,
             localConfigList:[],
@@ -146,14 +164,7 @@ let app = new Vue({
         if (localConfig!==null && typeof localConfig==="object" && localConfig.hasOwnProperty("current") && typeof localConfig.current==="number"){
             config = localConfig.config[localConfig.current] || null;
             data.selectConfigIndex = localConfig.current;
-
-            localConfig.config.forEach((c,i)=>{
-                let name = "配置" + (i+1);
-                if (c.hasOwnProperty("config") && c.config.hasOwnProperty("configName") && c.config.configName!==""){
-                    name += "(" + c.config.configName + ")";
-                }
-                data.localConfigList.push(name);
-            });
+            data.localConfigList = configList(localConfig);
         }else {
             config = localConfig;
         }
@@ -166,7 +177,6 @@ let app = new Vue({
                             dbs.list.forEach((db)=>{
                                 if (db.BuildingName===item.building){
                                     db.star = item.star;
-                                    db.quest = item.quest;
                                     db.disabled = item.disabled;
                                     db.level = getValidLevel(item.level);
                                 }
@@ -210,23 +220,8 @@ let app = new Vue({
 
         return data;
     },
-    watch:{
-        "policy.step":function (val, oldVal) {
-            if (val!==oldVal){
-                let temp = getPolicyLevelData(val);
-                temp.forEach(l=>{
-                    this.policy.levels.forEach(pl=>{
-                        if (l.title===pl.title){
-                            l.level = pl.level;
-                        }
-                    });
-                });
-                this.policy.levels = temp;
-            }
-        }
-    },
     methods:{
-        calculation:function () {
+        calculation() {
             this.calculationIng = true;
             //拿出已有的建筑
             let list = [];
@@ -239,7 +234,6 @@ let app = new Vue({
                     if (!item.disabled && Number(item.star)>0){
                         building.list.push({
                             star:Number(item.star),
-                            quest:item.quest,
                             name:item.BuildingName,
                             level:getValidLevel(item.level)
                         });
@@ -273,16 +267,6 @@ let app = new Vue({
                                         });
                                     });
                                 });
-                                _self.buildings.forEach((building)=>{
-                                    building.list.forEach((item)=>{
-                                        if (program.addition.upgrade.building.BuildingName===item.BuildingName){
-                                            program.addition.upgrade.building = item;
-                                        }
-                                        if (program.addition.upgrade.nextBuilding.BuildingName===item.BuildingName){
-                                            program.addition.upgrade.nextBuilding = item;
-                                        }
-                                    });
-                                });
                             });
 
                         }else if (mode==="progress"){
@@ -300,7 +284,7 @@ let app = new Vue({
                 //抱歉! Web Worker 不支持
             }
         },
-        getConfig:function(){
+        getConfig(){
             let config = {
                 building:[],
                 buff:[],
@@ -313,7 +297,6 @@ let app = new Vue({
                         config.building.push({
                             building:item.BuildingName,
                             star:Number(item.star),
-                            quest:item.quest,
                             disabled:item.disabled,
                             level:getValidLevel(item.level)
                         });
@@ -348,7 +331,7 @@ let app = new Vue({
 
             return JSON.stringify(localConfig);
         },
-        localConfig:function(){
+        localConfig(){
             let config = null;
             let storage = localStorage.getItem(storage_key);
             if (storage!==null){
@@ -360,8 +343,9 @@ let app = new Vue({
             }
             return config;
         },
-        save:function () {
+        saveConfig() {
             localStorage.setItem(storage_key,this.getConfig());
+            this.localConfigList = configList(this.localConfig());
 
             this.$bvToast.toast('配置保存成功', {
                 title: '提示',
@@ -369,8 +353,8 @@ let app = new Vue({
                 solid: true
             });
         },
-        clear:function () {
-            this.$bvModal.msgBoxConfirm('是否要清除本地存档？清除后不可恢复，请谨慎操作！', {
+        clearConfig() {
+            this.$bvModal.msgBoxConfirm('是否要清除本地存档（删除所有配置）？清除后不可恢复，请谨慎操作！', {
                 title: '请确认',
                 size: 'sm',
                 buttonSize: 'sm',
@@ -391,12 +375,9 @@ let app = new Vue({
                         solid: true
                     });
                 }
-            })
-                .catch(err => {
-
-                });
+            });
         },
-        removeConfig:function(){
+        removeConfig(){
             this.$bvModal.msgBoxConfirm('是否要删除配置 ' + this.localConfigList[this.selectConfigIndex] + ' ？删除后不可恢复，请谨慎操作！', {
                 title: '请确认',
                 size: 'sm',
@@ -428,7 +409,7 @@ let app = new Vue({
                 }
             });
         },
-        addConfig:function(){
+        addConfig(){
             this.$bvModal.msgBoxConfirm('是否要保存当前数据？', {
                 title: '请确认',
                 size: 'sm',
@@ -447,17 +428,61 @@ let app = new Vue({
                 let localConfig = this.localConfig();
                 if (localConfig!==null && typeof localConfig==="object" && localConfig.hasOwnProperty("current") && typeof localConfig.current==="number"){
                     localConfig.current = localConfig.config.length;
+                    localConfig.config.push({})
                 }else {
                     localConfig = {
-                        current:1,
-                        config:[config]
+                        current:0,
+                        config:[]
                     };
                 }
                 localStorage.setItem(storage_key,JSON.stringify(localConfig));
                 Object.assign(this.$data, this.$options.data());
             });
         },
-        stop:function () {
+        copyConfig(){
+            this.$bvModal.msgBoxConfirm('是否要把当前存档复制一份？', {
+                title: '请确认',
+                size: 'sm',
+                buttonSize: 'sm',
+                okVariant: 'success',
+                okTitle: '确认',
+                cancelTitle: '取消',
+                footerClass: 'p-2',
+                hideHeaderClose: false,
+                centered: true
+            }).then(value => {
+                if (value){
+                    let localConfig = this.localConfig();
+                    if (localConfig!==null && typeof localConfig==="object" && localConfig.hasOwnProperty("current") && typeof localConfig.current==="number"){
+                        if (localConfig.current>=localConfig.config.length){
+                            this.$bvToast.toast('无效的配置，无法复制', {
+                                title: '提示',
+                                variant: 'danger',//danger,warning,info,primary,secondary,default
+                                solid: true
+                            });
+                        }else {
+                            localConfig.config.push(localConfig.config[localConfig.current]);
+                            localStorage.setItem(storage_key,JSON.stringify(localConfig));
+
+                            this.localConfigList = configList(localConfig);
+
+                            this.$bvToast.toast('配置复制成功', {
+                                title: '提示',
+                                variant: 'success',//danger,warning,info,primary,secondary,default
+                                solid: true
+                            });
+                        }
+                    }else {
+                        this.$bvToast.toast('本地配置无效，无法复制', {
+                            title: '提示',
+                            variant: 'danger',//danger,warning,info,primary,secondary,default
+                            solid: true
+                        });
+                    }
+                }
+            });
+        },
+        stop() {
             try {
                 worker.terminate();
                 worker = undefined;
@@ -564,9 +589,9 @@ let app = new Vue({
                         });
                     }
                 }
-            })
+            });
         },
-        switchConfig:function () {
+        switchConfig() {
             if (this.selectConfigIndex<0){
                 this.$bvToast.toast('无效的配置名', {
                     title: '提示',
@@ -583,23 +608,91 @@ let app = new Vue({
                         variant: 'danger',//danger,warning,info,primary,secondary,default
                         solid: true
                     });
-                    return;
+                }else {
+                    localConfig.current = this.selectConfigIndex;
+                    localStorage.setItem(storage_key,JSON.stringify(localConfig));
+                    Object.assign(this.$data, this.$options.data());
+                    this.$bvToast.toast('配置切换成功', {
+                        title: '提示',
+                        variant: 'success',//danger,warning,info,primary,secondary,default
+                        solid: true
+                    });
                 }
-                localConfig.current = this.selectConfigIndex;
             }else {
                 this.$bvToast.toast('本地配置无效，无法切换', {
                     title: '提示',
                     variant: 'danger',//danger,warning,info,primary,secondary,default
                     solid: true
                 });
-                return;
             }
-            localStorage.setItem(storage_key,JSON.stringify(localConfig));
-            Object.assign(this.$data, this.$options.data());
-            this.$bvToast.toast('配置切换成功', {
-                title: '提示',
-                variant: 'success',//danger,warning,info,primary,secondary,default
-                solid: true
+        },
+        switchPolicyStep() {
+            this.policy.levels = getPolicyLevelData(this.policy.step);
+        },
+        clearQuestData(){
+            this.$bvModal.msgBoxConfirm('是否要把城市任务加成清空？清空后如果没有保存配置，刷新后即可恢复。', {
+                title: '请确认',
+                size: 'sm',
+                buttonSize: 'sm',
+                okVariant: 'success',
+                okTitle: '确认',
+                cancelTitle: '取消',
+                footerClass: 'p-2',
+                hideHeaderClose: false,
+                centered: true
+            }).then(value => {
+                if (value){
+                    this.buffs.forEach(buff=>{
+                        if (buff.type===BuffSource.Quest){
+                            buff.list.forEach(item=>{
+                                item.buff = 0;
+                            });
+                        }
+                    });
+                    this.config.questTargetBuff.forEach(target=>{
+                        target.building = "";
+                        target.buff = 0;
+                    });
+                    this.$bvToast.toast('清除成功，请配置新的任务加成数据', {
+                        title: '提示',
+                        variant: 'success',//danger,warning,info,primary,secondary,default
+                        solid: true
+                    });
+                }
+            });
+        },
+        selectProgram(buildings){
+            this.$bvModal.msgBoxConfirm('是否要把除了当前方案中的建筑之外的所有建筑都禁用？应用后如果没有保存配置，刷新后即可恢复。', {
+                title: '请确认',
+                size: 'sm',
+                buttonSize: 'sm',
+                okVariant: 'success',
+                okTitle: '确认',
+                cancelTitle: '取消',
+                footerClass: 'p-2',
+                hideHeaderClose: false,
+                centered: true
+            }).then(value => {
+                if (value){
+                    let bs = [];
+                    buildings.forEach(b=>{
+                        bs.push(b.building);
+                    });
+                    this.buildings.forEach((b)=>{
+                        b.list.forEach((item)=>{
+                            if (bs.indexOf(item)===-1){
+                                item.disabled = true;
+                            }else {
+                                item.disabled = false;
+                            }
+                        });
+                    });
+                    this.$bvToast.toast('应用成功', {
+                        title: '提示',
+                        variant: 'success',//danger,warning,info,primary,secondary,default
+                        solid: true
+                    });
+                }
             });
         }
     }
@@ -629,8 +722,25 @@ function getPolicyLevelData(step) {
     policy.policys.forEach((p)=>{
         data.push({
             title:p.title,
-            level:1
+            level:0
         });
     });
     return data;
+}
+
+function configList(localConfig) {
+    let list = [];
+    if (localConfig!==null && typeof localConfig==="object"){
+        if (localConfig.hasOwnProperty("config") && Array.isArray(localConfig.config)){
+            localConfig.config.forEach((c,i)=>{
+                let name = "配置" + (i+1);
+                if (c.hasOwnProperty("config") && c.config.hasOwnProperty("configName") && c.config.configName!==""){
+                    name = c.config.configName;
+                }
+                list.push(name);
+            });
+        }
+    }
+
+    return list;
 }
