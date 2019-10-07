@@ -217,6 +217,9 @@ let app = new Vue({
             if (config.hasOwnProperty("policy")){
                 Object.assign(data.policy,config.policy);
             }
+            if (config.hasOwnProperty("buildingProgram")){
+                Object.assign(data.buildingProgram,config.buildingProgram);
+            }
         }
         if (!data.policy.levels || data.policy.levels.length<=0){
             data.policy.levels = getPolicyLevelData(data.policy.step);
@@ -350,7 +353,8 @@ let app = new Vue({
                 building:[],
                 buff:[],
                 config: this.config,
-                policy: this.policy
+                policy: this.policy,
+                buildingProgram: this.buildingProgram
             };
             this.buildings.forEach(function (cls) {
                 cls.list.forEach(function (item) {
