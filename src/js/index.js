@@ -39,7 +39,7 @@ import {getPolicy} from "./Policy";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.15";
+let version = "0.16";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
@@ -79,6 +79,10 @@ let app = new Vue({
             },
             selectConfigIndex:0,
             localConfigList:[],
+            buildingProgram:{
+                current:-1,
+                programs:[]
+            },
             buildings:[
                 {
                     type:BuildingType.Residence,
@@ -737,11 +741,7 @@ let app = new Vue({
                     });
                     this.buildings.forEach((b)=>{
                         b.list.forEach((item)=>{
-                            if (bs.indexOf(item)===-1){
-                                item.disabled = true;
-                            }else {
-                                item.disabled = false;
-                            }
+                            item.disabled = bs.indexOf(item) === -1;
                         });
                     });
                     this.$bvToast.toast('应用成功', {
@@ -848,6 +848,136 @@ let app = new Vue({
                     });
                 }
             });
+        },
+        switchBuildingProgram(){
+            if (this.buildingProgram.current>=0 && this.buildingProgram.programs.length>0){
+                let bps = this.buildingProgram.programs[this.buildingProgram.current].inUse;
+                if (Array.isArray(bps)){
+                    this.buildings.forEach((b)=>{
+                        b.list.forEach((item)=>{
+                            item.disabled = bps.indexOf(item.BuildingName) === -1;
+                        });
+                    });
+                    this.$bvToast.toast('切换方案成功', {
+                        title: '提示',
+                        variant: 'success',//danger,warning,info,primary,secondary,default
+                        solid: true
+                    });
+                    return;
+                }
+            }
+            this.$bvToast.toast('方案数据错误，无法切换', {
+                title: '提示',
+                variant: 'danger',//danger,warning,info,primary,secondary,default
+                solid: true
+            });
+        },
+        buildingProgramSave(){
+            this.buildingProgramInit();
+            if (this.buildingProgram.programs.length<=0){
+                this.buildingProgram.programs.push({title:"",inUse:[]});
+                this.buildingProgram.current = 0;
+            }
+            this.buildingProgram.programs[this.buildingProgram.current].inUse = [];
+            let bps = this.buildingProgram.programs[this.buildingProgram.current].inUse;
+            this.buildings.forEach((b)=>{
+                b.list.forEach((item)=>{
+                    if (!item.disabled){
+                        bps.push(item.BuildingName);
+                    }
+                });
+            });
+            this.$bvToast.toast('方案保存成功', {
+                title: '提示',
+                variant: 'success',//danger,warning,info,primary,secondary,default
+                solid: true
+            });
+        },
+        buildingProgramSaveTo(){
+            this.buildingProgramInit();
+
+            let bps = [];
+            this.buildings.forEach((b)=>{
+                b.list.forEach((item)=>{
+                    if (!item.disabled){
+                        bps.push(item.BuildingName);
+                    }
+                });
+            });
+            this.buildingProgram.programs.push({title:"",inUse:bps});
+            this.$bvToast.toast('方案保存成功', {
+                title: '提示',
+                variant: 'success',//danger,warning,info,primary,secondary,default
+                solid: true
+            });
+        },
+        buildingProgramRemove(){
+            this.$bvModal.msgBoxConfirm('是否要删除当前方案？删除后如果没有保存配置，刷新页面后即可恢复。', {
+                title: '请确认',
+                size: 'sm',
+                buttonSize: 'sm',
+                okVariant: 'danger',
+                okTitle: '确认',
+                cancelTitle: '取消',
+                footerClass: 'p-2',
+                hideHeaderClose: false,
+                centered: true
+            }).then(value => {
+                if (value){
+                    this.buildingProgramInit();
+                    if (this.buildingProgram.programs.length>0){
+                        this.buildingProgram.programs.splice(this.buildingProgram.current,1);
+                        if (this.buildingProgram.programs.length===0){
+                            this.buildingProgram.current=-1;
+                        }else {
+                            if (this.buildingProgram.current>0){
+                                this.buildingProgram.current-=1;
+                            }
+                        }
+                    }
+                    this.switchBuildingProgram();
+
+                    this.$bvToast.toast('方案已删除', {
+                        title: '提示',
+                        variant: 'success',//danger,warning,info,primary,secondary,default
+                        solid: true
+                    });
+                }
+            });
+        },
+        buildingProgramClear(){
+            this.$bvModal.msgBoxConfirm('是否要删除所有方案？删除后如果没有保存配置，刷新页面后即可恢复。', {
+                title: '请确认',
+                size: 'sm',
+                buttonSize: 'sm',
+                okVariant: 'danger',
+                okTitle: '确认',
+                cancelTitle: '取消',
+                footerClass: 'p-2',
+                hideHeaderClose: false,
+                centered: true
+            }).then(value => {
+                if (value){
+                    this.buildingProgramInit();
+                    this.buildingProgram = {
+                        current:-1,
+                        programs:[]
+                    };
+
+                    this.$bvToast.toast('方案已全部删除', {
+                        title: '提示',
+                        variant: 'success',//danger,warning,info,primary,secondary,default
+                        solid: true
+                    });
+                }
+            });
+        },
+        buildingProgramInit(){
+            this.buildingProgram.current = Math.max(this.buildingProgram.current,0);
+            if (!Array.isArray(this.buildingProgram.programs)){
+                this.buildingProgram.programs = [];
+            }
+            this.buildingProgram.current = Math.min(this.buildingProgram.current,this.buildingProgram.programs.length-1);
         }
     }
 });
