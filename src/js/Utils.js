@@ -5,7 +5,10 @@ unitArr.forEach(v=>{
 });
 
 function renderSize(value){
-    if(null===value||value===''||value===0){
+    if (value===0){
+        return 0;
+    }
+    if(null===value||value===''){
         return "0";
     }
 

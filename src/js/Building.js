@@ -30,23 +30,7 @@ class Building{
         return tooltip.join("<br />");
     }
 
-    calculation(buffs){
-        //即将废除
-        let addition = {};
-        let money = this.money;
-        addition[BuffRange.Online] = money;
-        addition[BuffRange.Offline] = money / 2;
-        [BuffSource.Building,BuffSource.Policy,BuffSource.Photo,BuffSource.Quest].forEach((source)=>{
-            let buff = buffs.Calculation(source,this);
-            Object.keys(buff).forEach((range)=>{
-                addition[range] *= buff[range];
-            });
-        });
-        return addition;
-    }
-
     get money(){
-        //即将废除
         return this.baseMoney * this.multiple * getIncome(this.level); //这里需要按等级计算，这是基础金钱收益
     }
 

@@ -237,7 +237,9 @@ function calculationType1(list,policy,buff,config) {
                     supply:0,
                     buildings:[],
                     toTps:0,
-                    useMoney:0
+                    useMoney:0,
+                    needTime:0,
+                    maxNeedTime:0
                 };
 
                 let buffs = new Buffs();
@@ -264,7 +266,9 @@ function calculationType1(list,policy,buff,config) {
                     addition.offline += sumMoney[BuffRange.Offline];
                     addition.buildings.push({
                         online:sumMoney[BuffRange.Online],
+                        onlineTooltip:"",
                         offline:sumMoney[BuffRange.Offline],
+                        offlineTooltip:"",
                         multiple:sumMultiple,
                         toLevel:t.level,
                         toOnline:sumMoney[BuffRange.Online],
@@ -410,20 +414,21 @@ function calculationType1(list,policy,buff,config) {
                 program.addition.useMoney += u.cost;
             }
         }else if (config.upgradeRecommend.mode===3){
-            let tps = program.addition.online;
-            while (tps<config.upgradeRecommend.value){
+            while (program.addition.toTps<config.upgradeRecommend.value){
                 //按优先度升级，并返回增加的tps，并将tps加上对应的数值
                 let u = upgrade(program.addition.buildings);
                 if (u.addMoney===0){
                     break;
                 }
-                tps += u.addMoney;
                 u.building.toOnline += u.addMoney;
+                program.addition.needTime += u.cost / program.addition.toTps;
                 program.addition.toTps += u.addMoney;
                 program.addition.useMoney += u.cost;
             }
         }
         program.addition.buildings.forEach((building)=>{
+            building.onlineTooltip = "建筑在线收益倍数:" + (building.multiple[BuffRange.Online] / building.building.baseMoney / building.building.multiple).toFixed(2);
+            building.offlineTooltip = "建筑离线收益倍数:" + (building.multiple[BuffRange.Offline] / building.building.baseMoney / building.building.multiple).toFixed(2);
             building.online = renderSize(building.online);
             building.offline = renderSize(building.offline);
             building.toOnline = renderSize(building.toOnline);
@@ -434,6 +439,8 @@ function calculationType1(list,policy,buff,config) {
             }
         });
 
+        program.addition.needTime = formatSeconds(program.addition.needTime);
+        program.addition.maxNeedTime = formatSeconds(program.addition.useMoney / program.addition.online);
         program.addition.toTps = renderSize(program.addition.toTps);
         program.addition.useMoney = renderSize(program.addition.useMoney);
         program.addition.online = renderSize(program.addition.online);
@@ -480,7 +487,9 @@ function calculationType2(list,policy,buff,config) {
                     supply:0,
                     buildings:[],
                     toTps:0,
-                    useMoney:0
+                    useMoney:0,
+                    needTime:0,
+                    maxNeedTime:0
                 };
 
                 let buffs = new Buffs();
@@ -499,7 +508,9 @@ function calculationType2(list,policy,buff,config) {
                     addition.offline += sumMoney[BuffRange.Offline];
                     addition.buildings.push({
                         online:sumMoney[BuffRange.Online],
+                        onlineTooltip:"",
                         offline:sumMoney[BuffRange.Offline],
+                        offlineTooltip:"",
                         multiple:sumMultiple,
                         toLevel:t.level,
                         toOnline:sumMoney[BuffRange.Online],
@@ -510,28 +521,27 @@ function calculationType2(list,policy,buff,config) {
                 addition.supply = Math.round(buffs.supplyBuff*100);
                 addition.toTps = addition.online;
 
-                let tps = addition.online;
-                while (tps<config.upgradeRecommend.value){
+                while (addition.toTps<config.upgradeRecommend.value){
                     //按优先度升级，并返回增加的tps，并将tps加上对应的数值
                     let u = upgrade(addition.buildings);
                     if (u.addMoney===0){
                         break;
                     }
-                    tps += u.addMoney;
                     u.building.toOnline += u.addMoney;
+                    addition.needTime += u.cost / addition.toTps;
                     addition.toTps += u.addMoney;
                     addition.useMoney += u.cost;
                 }
                 if (useMoney===addition.useMoney){
-                    if (bestTps<tps){
+                    if (bestTps<addition.toTps){
                         useMoney = addition.useMoney;
-                        bestTps = tps;
+                        bestTps = addition.toTps;
                         tempResult.money = addition.online;
                         tempResult.addition = addition;
                     }
                 }else if (useMoney===-1 || addition.useMoney<useMoney){
                     useMoney = addition.useMoney;
-                    bestTps = tps;
+                    bestTps = addition.toTps;
                     tempResult.money = addition.online;
                     tempResult.addition = addition;
                 }
@@ -540,6 +550,8 @@ function calculationType2(list,policy,buff,config) {
     });
 
     tempResult.addition.buildings.forEach((building)=>{
+        building.onlineTooltip = "建筑在线收益倍数:" + (building.multiple[BuffRange.Online] / building.building.baseMoney / building.building.multiple).toFixed(2);
+        building.offlineTooltip = "建筑离线收益倍数:" + (building.multiple[BuffRange.Offline] / building.building.baseMoney / building.building.multiple).toFixed(2);
         building.online = renderSize(building.online);
         building.offline = renderSize(building.offline);
         building.toOnline = renderSize(building.toOnline);
@@ -550,6 +562,8 @@ function calculationType2(list,policy,buff,config) {
         }
     });
 
+    tempResult.addition.needTime = formatSeconds(tempResult.addition.needTime);
+    tempResult.addition.maxNeedTime = formatSeconds(tempResult.addition.useMoney / tempResult.addition.online);
     tempResult.addition.toTps = renderSize(tempResult.addition.toTps);
     tempResult.addition.useMoney = renderSize(tempResult.addition.useMoney);
     tempResult.addition.online = renderSize(tempResult.addition.online);
@@ -590,27 +604,40 @@ function upgrade(buildings) {
     }
 }
 
-// function upgradeBenefit(online,building,buffs) {
-//     if (building.level<2000){
-//         building.level += 1;
-//     }else {
-//         return {
-//             online: online,
-//             benefit: 0
-//         };
-//     }
-//     let cost = getCost(building.level,building.rarity);
-//
-//     let addition = building.calculation(buffs);
-//     let addOnline = addition[BuffRange.Online] - online;
-//     if (addOnline===0){
-//         return {
-//             online: addition[BuffRange.Online],
-//             benefit: 0
-//         };
-//     }
-//     return {
-//         online:addition[BuffRange.Online],
-//         benefit:addOnline/cost
-//     };
-// }
+function formatSeconds(second) {
+    if (second===0 || second===Infinity){
+        return 0;
+    }
+    second = Math.ceil(second);
+    // second = parseInt(second);// 需要转换的时间秒
+    let minute = 0;// 分
+    let hour = 0;// 小时
+    let day = 0;// 天
+    if(second >= 60) {
+        minute = Math.floor(second/60);
+        second = second%60;
+        if(minute >= 60) {
+            hour = Math.floor(minute/60);
+            minute = minute%60;
+            if(hour >= 24){
+                //大于24小时
+                day = Math.floor(hour/24);
+                hour = hour%24;
+            }
+        }
+    }
+    let result = '';
+    if (day>0){
+        result += day + "天";
+    }
+    if (hour>0){
+        result += hour + "小时"
+    }
+    if (minute>0){
+        result += minute + "分";
+    }
+    if (second>0){
+        result += second + "秒";
+    }
+    return result;
+}

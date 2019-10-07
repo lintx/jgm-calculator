@@ -37,7 +37,7 @@
                             <h5>政策配置</h5>
                             <div class="input-group input-group-sm mb-3">
                                 <div class="input-group-prepend">
-                                    <label class="input-group-text">当前政策阶段:</label>
+                                    <label class="input-group-text" v-b-tooltip.hover.html.v-info :title="donePolicyTooltip">当前政策阶段:</label>
                                 </div>
                                 <select @change="switchPolicyStep" v-model.number="policy.step" class="custom-select">
                                     <option v-for="i in 10" :value="i">第 {{i}} 阶段</option>
@@ -45,7 +45,7 @@
                             </div>
                             <div class="input-group input-group-sm mb-3" v-for="level in policy.levels">
                                 <div class="input-group-prepend">
-                                    <label class="input-group-text">{{level.title}} 等级:</label>
+                                    <label class="input-group-text" v-b-tooltip.hover.html.v-info :title="currentPolicyTooltip(level)">{{level.title}} 等级:</label>
                                 </div>
                                 <select v-model.number="level.level" class="custom-select">
                                     <option v-for="i in 6" :value="i-1">{{i-1}} 级</option>
@@ -230,9 +230,26 @@
                                             <li>按总升级次数:先计算出各最优方案，然后计算方案中建筑总共升级指定次数后最优建筑等级</li>
                                             <li>按剩余金币:先计算出各最优方案，然后计算该方案使用指定金币升级建筑的最优建筑等级</li>
                                             <li>按目标秒收入:先计算出各最优方案，然后计算该方案达到目标秒收入时的最优建筑等级，建议目标秒收入和当前秒收入不要差距太大</li>
-                                            <li>按目标秒收入费用最少:在计算方案过程中即计算升级到目标秒收入时的最优建筑等级和需要消耗的金币，该方案会大量增加运算量，需要的时间大幅增长，建议目标秒收入和当前秒收入不要差距太大</li>
+                                            <li>按目标秒收入费用最少:在计算方案过程中即计算升级到目标秒收入时的最优建筑等级和需要消耗的金币，使用该方案将只返回“在线金币优先”一种策略结果，该方案会大量增加运算量，需要的时间大幅增长，建议目标秒收入和当前秒收入不要差距太大</li>
                                         </ul>
                                         除“按总升级次数”外，数值填写游戏中的金币数量/秒收入数量，如“100ee”
+                                    </li>
+                                    <li>
+                                        关于计算量：
+                                        不管使用什么策略，
+                                        计算过程中均为先求出所有的组合（30种建筑全部计算时总共有1728000种组合，
+                                        单种类建筑的组合可能性为(x*(x-1)*(x-2))/(3*(3-1)*(3-2))，
+                                        也就是(x*(x-1)*(x-2))/6，10种建筑全选时组合数量为120，
+                                        然后把3种建筑的组合可能性相乘即为全部可能的组合即120*120*120=1728000），
+                                        然后求出每种每种组合的相关数据（先应用组合建筑间的加成，然后求出在线收益、离线收益、供货加成等数据），
+                                        计算过程中记录各种数据最好的组合，
+                                        所以最终结果的策略数量多少不会影响计算速度，
+                                        影响计算速度的最关键数据是计算过程中使用的建筑数量（如果每种建筑禁用一种，那么总的组合数量为592704，计算时间大约只有全建筑的1/3了，禁用数据越多，计算速度越快），
+                                        其中，如果升级推荐方案选择“按目标秒收入费用最少”，
+                                        则计算量还会受到目标收入和当前收入之间收入差的影响，
+                                        因为这种计算方案在计算每一种可能性时，
+                                        都需要一次次的模拟建筑升级，
+                                        收入差则需要模拟建筑升级的次数越多，则计算时间越长。
                                     </li>
                                 </ul>
                             </div>
@@ -298,9 +315,26 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-12" v-if="!calculationIng && programs.length==0">
+                        <div class="col-12" v-if="!calculationIng && programs.length===0">
                             <div class="alert alert-info" role="alert">
                                 <h4 class="alert-heading">点击上面的“开始计算”并等待计算完毕后查看</h4>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="alert alert-info" role="alert">
+                                <h4 class="alert-heading">提示</h4>
+                                <ul>
+                                    <li>
+                                        如果推荐升级策略选的是两种按目标秒收入策略之一，
+                                        目标秒收入比当前秒收入高，
+                                        那么计算结果中还会显示升级到目标秒收入的预计时间，
+                                        你会发现显示的有2个时间，其中，前面的时间是按最优升级策略，
+                                        一旦金币足够就立即升级对应建筑（升级策略选“按升级次数”，升级次数填1时计算出来推荐升级的那个建筑）这种操作模式下需要的时间（即最小时间）
+                                        后面的时间是保持当前的收入速度，一直累计到升级到目标秒收入需要的金币后一次性将建筑升级到目标等级需要的时间。
+                                        <p>注：计算需要的时间时，无法考虑小火车拉货增加的金币、开红包增加的金币、开相册增加的金币等数据。</p>
+                                    </li>
+                                    <li>如果部分数据和实际数据有微小差别（如1%-2%左右），可能是因为精度问题（原始数据在高等级时均为科学计数法表示损失了部分精度，或者计算结果的四舍五入），如果偏差较大，请先确定配置中的数据和游戏中的一致，如果一致，可以在游戏中随意更换一个建筑再换回来看看游戏内数据有没有变更，如果变了可能是你碰到游戏bug了（这个bug很多人碰到了）</li>
+                                </ul>
                             </div>
                         </div>
                         <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4 mb-4" v-for="program in programs">
@@ -335,20 +369,21 @@
                                  ]"
                                     >
                                         <td class="text-nowrap text-center" v-b-tooltip.hover.html.v-info :title="building.building.tooltip">{{building.building.BuildingName}}</td>
-                                        <td class="text-center">{{building.online}}/秒</td>
-                                        <td class="text-center">{{building.offline}}/秒</td>
+                                        <td class="text-center" v-b-tooltip.hover.html.v-info :title="building.onlineTooltip">{{building.online}}/秒</td>
+                                        <td class="text-center" v-b-tooltip.hover.html.v-info :title="building.offlineTooltip">{{building.offline}}/秒</td>
                                         <td class="text-center" v-b-tooltip.hover.html.v-info :title="building.tooltip">{{building.toLevel}}</td>
                                     </tr>
                                     </tbody>
                                 </table>
                                 <div class="card-body">
                                     <h5 class="card-title">{{program.title.join("；")}}</h5>
-                                    <p class="card-text">
-                                        该组合和当前buff下，将所有建筑升级到目标等级后，总在线收入将达到{{program.addition.toTps}}/秒，总共需要花费金币{{program.addition.useMoney}}
+                                    <p class="card-text" v-if="program.addition.useMoney!==0">
+                                        <span>该组合和当前buff下，将所有建筑升级到目标等级后，总在线收入将达到{{program.addition.toTps}}/秒，总共需要花费金币{{program.addition.useMoney}}</span>
+                                        <span v-if="program.addition.needTime!==0">，升级到目标收入预计需要{{program.addition.needTime}}至{{program.addition.maxNeedTime}}的时间</span>
                                     </p>
                                     <p>
                                         <button type="button" @click="selectProgram(program.addition.buildings)" class="btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="将本方案的建筑之外的所有建筑禁用">应用方案</button>
-                                        <button type="button" @click="syncProgramLevel(program.addition.buildings)" class="btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="将本方案的推荐等级同步到设置中">同步等级</button>
+                                        <button type="button" @click="syncProgramLevel(program.addition.buildings)" class="btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="将本方案的推荐等级同步到设置中" v-if="program.addition.useMoney!==0">同步等级</button>
                                     </p>
                                 </div>
                             </div>

@@ -39,7 +39,7 @@ import {getPolicy} from "./Policy";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.14";
+let version = "0.15";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
@@ -219,6 +219,63 @@ let app = new Vue({
         }
 
         return data;
+    },
+    computed: {
+        // 计算属性的 getter
+        donePolicyTooltip: function () {
+            if (this.policy.step<=1){
+                return "";
+            }
+            // `this` 指向 vm 实例
+            //全局的buff
+            let globalBuffs = new Buffs();
+            //添加政策buff
+            for (let i=1;i<this.policy.step;i++){
+                getPolicy(i).policys.forEach((p)=>{
+                    globalBuffs.add(BuffSource.Policy,p.buff(5));
+                });
+            }
+            let buffs = {};
+            Object.keys(BuffRange).forEach((rkey)=>{
+                let range = BuffRange[rkey];
+                if (range===BuffRange.Targets){
+                    return;
+                }
+                buffs[range] = 0;
+            });
+            globalBuffs.Policy.forEach(buff=>{
+                buffs[buff.range] += buff.buff * 100;
+            });
+            let title = "";
+            if (this.policy.step===2){
+                title = "第 1 阶段政策总加成:";
+            }else {
+                title = "第 1 至第 " + (this.policy.step-1) + " 阶段政策总加成:";
+            }
+            let tempArr = [title];
+            Object.keys(buffs).forEach(name=>{
+                tempArr.push(name + ":" + buffs[name] + "%");
+            });
+            return tempArr.join('<br />');
+        },
+        currentPolicyTooltip:function () {
+            let policys = getPolicy(this.policy.step).policys;
+            let policyObj = {};
+            policys.forEach(policy=>{
+                let b = {0:""};
+                policy.policyLevels.forEach(l=>{
+                    b[l.level] = l.buff.target + ":" + l.buff.buff + "%";
+                });
+                policyObj[policy.title] = b;
+            });
+            return function(level){
+                if (level.level>0){
+                    return level.level + " 级 " + level.title + "政策加成:<br />" + policyObj[level.title][level.level];
+                }else {
+                    return "";
+                }
+            };
+        }
     },
     methods:{
         calculation() {
