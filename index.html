@@ -346,7 +346,10 @@
                                     <p class="card-text">
                                         该组合和当前buff下，将所有建筑升级到目标等级后，总在线收入将达到{{program.addition.toTps}}/秒，总共需要花费金币{{program.addition.useMoney}}
                                     </p>
-                                    <p><button type="button" @click="selectProgram(program.addition.buildings)" class="btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="将本方案的建筑之外的所有建筑禁用">应用方案</button></p>
+                                    <p>
+                                        <button type="button" @click="selectProgram(program.addition.buildings)" class="btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="将本方案的建筑之外的所有建筑禁用">应用方案</button>
+                                        <button type="button" @click="syncProgramLevel(program.addition.buildings)" class="btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="将本方案的推荐等级同步到设置中">同步等级</button>
+                                    </p>
                                 </div>
                             </div>
                         </div>
