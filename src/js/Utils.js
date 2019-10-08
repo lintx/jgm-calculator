@@ -11,6 +11,12 @@ function renderSize(value){
     if(null===value||value===''){
         return "0";
     }
+    if (value<0){
+        return "err";
+    }
+    if (value<1){
+        return value.toFixed(2);
+    }
 
     let index=0,
         srcsize = parseFloat(value);

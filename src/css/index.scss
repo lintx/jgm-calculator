@@ -1,16 +1,41 @@
-.table-rare{
-  background-color: #7741de;
+$building_common_background_color : #b8daff !default;
+$building_common_border_color : #7abaff !default;
+$building_common_text_color : #212529 !default;
+
+$building_rare_background_color : #7741de !default;
+$building_rare_border_color : #5c34a7 !default;
+$building_rare_text_color : #cecece !default;
+
+$building_legendary_background_color : #ffeeba !default;
+$building_legendary_border_color : #ffdf7e !default;
+$building_legendary_text_color : #212529 !default;
+
+.building-common{
   td{
-    border-color: #5c34a7;
-    color: #cecece;
+    background-color: $building_common_background_color;
+    border-color: $building_common_border_color;
+    color: $building_common_text_color;
   }
 }
+
+.building-rare{
+  td{
+    background-color: $building_rare_background_color;
+    border-color: $building_rare_border_color;
+    color: $building_rare_text_color;
+  }
+}
+
+.building-legendary{
+  td{
+    background-color: $building_legendary_background_color;
+    border-color: $building_legendary_border_color;
+    color: $building_legendary_text_color;
+  }
+}
+
 .calculator-level,.calculator-star{
   min-width: 56px;
-}
-.badge-rare{
-  background-color: #7741de;
-  color: #cecece;
 }
 
 //去除number的箭头

@@ -39,7 +39,7 @@ import {getPolicy} from "./Policy";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.17";
+let version = "0.18";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
@@ -136,12 +136,27 @@ let app = new Vue({
                 levels: []
             },
             programs:[],
-            progress:0,
-            calculationIng:false
+            progress:{
+                progress:0,
+                useTime:"-",
+                needTime:"-"
+            },
+            calculationIng:false,
+            questList:[]
         };
         Object.keys(BuffSource).forEach((key)=>{
             let source = BuffSource[key];
             if (source===BuffSource.Building || source===BuffSource.Policy){
+                return;
+            }
+            if (source===BuffSource.Quest){
+                Object.keys(BuffRange).forEach((rkey)=>{
+                    let range = BuffRange[rkey];
+                    if (range===BuffRange.Targets){
+                        return;
+                    }
+                    data.questList.push(range);
+                });
                 return;
             }
             let buff = {
@@ -289,6 +304,7 @@ let app = new Vue({
             this.calculationIng = true;
             //拿出已有的建筑
             let list = [];
+            let count = 0;
             this.buildings.forEach(function (cls) {
                 let building = {
                     type:cls.type,
@@ -301,10 +317,21 @@ let app = new Vue({
                             name:item.BuildingName,
                             level:getValidLevel(item.level)
                         });
+                        count += 1;
                     }
                 });
                 list.push(building);
             });
+
+            if (count===0){
+                this.$bvToast.toast('你没有配置任何建筑，无法计算', {
+                    title: '错误',
+                    variant: 'danger',//danger,warning,info,primary,secondary,default
+                    solid: true
+                });
+                this.calculationIng = false;
+                return;
+            }
 
             if(typeof(Worker)!=="undefined") {
                 worker = new Worker("static/worker.js?v=" + this.version);
@@ -315,7 +342,11 @@ let app = new Vue({
                         _self.calculationIng = false;
                         worker.terminate();
                         worker = undefined;
-                        _self.progress = 0;
+                        _self.progress = {
+                            progress:0,
+                            useTime:"-",
+                            needTime:"-"
+                        };
                     }else {
                         let mode = data.mode;
                         if (mode==="result"){
@@ -521,7 +552,7 @@ let app = new Vue({
                     if (localConfig!==null && typeof localConfig==="object" && localConfig.hasOwnProperty("current") && typeof localConfig.current==="number"){
                         if (localConfig.current>=localConfig.config.length){
                             this.$bvToast.toast('无效的配置，无法复制', {
-                                title: '提示',
+                                title: '错误',
                                 variant: 'danger',//danger,warning,info,primary,secondary,default
                                 solid: true
                             });
@@ -539,7 +570,7 @@ let app = new Vue({
                         }
                     }else {
                         this.$bvToast.toast('本地配置无效，无法复制', {
-                            title: '提示',
+                            title: '错误',
                             variant: 'danger',//danger,warning,info,primary,secondary,default
                             solid: true
                         });
@@ -552,6 +583,11 @@ let app = new Vue({
                 worker.terminate();
                 worker = undefined;
                 this.calculationIng = false;
+                this.progress = {
+                    progress:0,
+                    useTime:"-",
+                    needTime:"-"
+                }
             }catch (e) {
 
             }
@@ -627,7 +663,7 @@ let app = new Vue({
                             || !config.hasOwnProperty("config")
                             || !Array.isArray(config.config)){
                             this.$bvToast.toast('无效的配置', {
-                                title: '提示',
+                                title: '错误',
                                 variant: 'danger',//danger,warning,info,primary,secondary,default
                                 solid: true
                             });
@@ -648,7 +684,7 @@ let app = new Vue({
                         });
                     }catch (e) {
                         this.$bvToast.toast('无效的配置', {
-                            title: '提示',
+                            title: '错误',
                             variant: 'danger',//danger,warning,info,primary,secondary,default
                             solid: true
                         });
@@ -659,7 +695,7 @@ let app = new Vue({
         switchConfig() {
             if (this.selectConfigIndex<0){
                 this.$bvToast.toast('无效的配置名', {
-                    title: '提示',
+                    title: '错误',
                     variant: 'danger',//danger,warning,info,primary,secondary,default
                     solid: true
                 });
@@ -669,7 +705,7 @@ let app = new Vue({
             if (localConfig!==null && typeof localConfig==="object" && localConfig.hasOwnProperty("current") && typeof localConfig.current==="number"){
                 if (this.selectConfigIndex>=localConfig.config.length){
                     this.$bvToast.toast('无效的配置名', {
-                        title: '提示',
+                        title: '错误',
                         variant: 'danger',//danger,warning,info,primary,secondary,default
                         solid: true
                     });
@@ -685,7 +721,7 @@ let app = new Vue({
                 }
             }else {
                 this.$bvToast.toast('本地配置无效，无法切换', {
-                    title: '提示',
+                    title: '错误',
                     variant: 'danger',//danger,warning,info,primary,secondary,default
                     solid: true
                 });
@@ -871,7 +907,7 @@ let app = new Vue({
                 }
             }
             this.$bvToast.toast('方案数据错误，无法切换', {
-                title: '提示',
+                title: '错误',
                 variant: 'danger',//danger,warning,info,primary,secondary,default
                 solid: true
             });
@@ -982,6 +1018,17 @@ let app = new Vue({
                 this.buildingProgram.programs = [];
             }
             this.buildingProgram.current = Math.min(this.buildingProgram.current,this.buildingProgram.programs.length-1);
+        },
+        buildingClass(building){
+            switch (building.rarity) {
+                case BuildingRarity.Common:
+                    return "building-common";
+                case BuildingRarity.Rare:
+                    return "building-rare";
+                case BuildingRarity.Legendary:
+                    return "building-legendary";
+            }
+            return "";
         }
     }
 });

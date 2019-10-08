@@ -141,9 +141,22 @@ function getGlobalBuff(policy, buff, config) {
     if (config.shineChinaBuff>0){
         globalBuffs.add(BuffSource.Policy,new Buff(BuffRange.Global,BuffRange.Global,config.shineChinaBuff));
     }
+    //添加城市任务buff
+    let buffRanges = [];
+    Object.keys(BuffRange).forEach((rkey)=>{
+        let range = BuffRange[rkey];
+        if (range===BuffRange.Targets){
+            return;
+        }
+        buffRanges.push(range);
+    });
     config.questTargetBuff.forEach(target=>{
         if (target.building!=="" && target.buff>0){
-            globalBuffs.add(BuffSource.Quest,new Buff(BuffRange.Targets,target.building,target.buff));
+            if (buffRanges.indexOf(target.building)===-1){
+                globalBuffs.add(BuffSource.Quest,new Buff(BuffRange.Targets,target.building,target.buff));
+            }else {
+                globalBuffs.add(BuffSource.Quest,new Buff(target.building,target.building,target.buff));
+            }
         }
     });
     //添加政策buff
@@ -214,22 +227,41 @@ function calculationType1(list,policy,buff,config) {
     //全局的buff
     let globalBuffs = getGlobalBuff(policy,buff,config);
 
-    let progressFull = programs[0].length;
-    let currentProgress = 0;
-    let progressTime = (new Date()).getTime();
-    programs[0].forEach(function (val1,i1) {
-        let tempProgress = Math.round((i1+1)/progressFull*100);
-        let nowTime = (new Date()).getTime();
-        if (tempProgress>currentProgress && nowTime-progressTime>=500){
-            currentProgress = tempProgress;
-            progressTime = nowTime;
-            postMessage({
-                mode:"progress",
-                progress:currentProgress
-            });
-        }
+    let progress = {
+        full:programs[0].length * programs[1].length * programs[2].length,
+        current:0,
+        lastTime:(new Date()).getTime(),
+        startTime:(new Date()).getTime(),
+        count:0
+    };
+    programs[0].forEach(function (val1) {
         programs[1].forEach(function (val2) {
             programs[2].forEach(function (val3) {
+                progress.count += 1;
+                let tempProgress = progress.count/progress.full*100;
+                let nowTime = (new Date()).getTime();
+                let sub = nowTime - progress.lastTime;
+                let currentProgress = Number(tempProgress.toFixed(2));
+                if (currentProgress>progress.current && sub>=500 || sub>=1000){
+                    progress.current = currentProgress;
+                    progress.lastTime = nowTime;
+                    let useTime = (nowTime - progress.startTime) / 1000;
+                    let needTime = useTime / tempProgress * 100 - useTime;
+                    needTime = formatSeconds(needTime);
+                    useTime = formatSeconds(useTime);
+                    if (needTime===0){
+                        needTime = "-";
+                    }
+                    postMessage({
+                        mode:"progress",
+                        progress:{
+                            progress:progress.current,
+                            useTime:useTime,
+                            needTime:needTime
+                        }
+                    });
+                }
+
                 let temp = [...val1,...val2,...val3];
                 let addition = {
                     online:0,
@@ -464,22 +496,41 @@ function calculationType2(list,policy,buff,config) {
     //全局的buff
     let globalBuffs = getGlobalBuff(policy,buff,config);
 
-    let progressFull = programs[0].length;
-    let currentProgress = 0;
-    let progressTime = (new Date()).getTime();
-    programs[0].forEach(function (val1,i1) {
-        let tempProgress = Math.round((i1+1)/progressFull*100);
-        let nowTime = (new Date()).getTime();
-        if (tempProgress>currentProgress && nowTime-progressTime>=500){
-            currentProgress = tempProgress;
-            progressTime = nowTime;
-            postMessage({
-                mode:"progress",
-                progress:currentProgress
-            });
-        }
+    let progress = {
+        full:programs[0].length * programs[1].length * programs[2].length,
+        current:0,
+        lastTime:(new Date()).getTime(),
+        startTime:(new Date()).getTime(),
+        count:0
+    };
+    programs[0].forEach(function (val1) {
         programs[1].forEach(function (val2) {
             programs[2].forEach(function (val3) {
+                progress.count += 1;
+                let tempProgress = progress.count/progress.full*100;
+                let nowTime = (new Date()).getTime();
+                let sub = nowTime - progress.lastTime;
+                let currentProgress = Number(tempProgress.toFixed(2));
+                if (currentProgress>progress.current && sub>=500 || sub>=1000){
+                    progress.current = currentProgress;
+                    progress.lastTime = nowTime;
+                    let useTime = (nowTime - progress.startTime) / 1000;
+                    let needTime = useTime / tempProgress * 100 - useTime;
+                    needTime = formatSeconds(needTime);
+                    useTime = formatSeconds(useTime);
+                    if (needTime===0){
+                        needTime = "-";
+                    }
+                    postMessage({
+                        mode:"progress",
+                        progress:{
+                            progress:progress.current,
+                            useTime:useTime,
+                            needTime:needTime
+                        }
+                    });
+                }
+
                 let temp = [...val1,...val2,...val3];
                 let addition = {
                     online:0,

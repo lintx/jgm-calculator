@@ -11,7 +11,7 @@ const htmlExtensions = ['.html','.htm','.tpl'];
 
 const host = {
     dev:'',
-    dis:'//example.com/'
+    dis:''
 };
 
 //目录配置
@@ -185,7 +185,7 @@ module.exports = function (env, argv) {
             new WebpackCleanupPlugin(),
         ],
         // devtool 更详细的资料：https://segmentfault.com/a/1190000008315937
-        devtool: 'source-map'
+        devtool: development ? 'inline-cheap-module-source-map' : false
     };
     if (!development) {
         //生产模式配置CSS压缩

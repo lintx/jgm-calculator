@@ -71,10 +71,13 @@
                         </div>
 
                         <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mb-3">
-                            <h5>城市任务对单建筑加成</h5>
+                            <h5>城市任务加成</h5>
                             <div v-for="quest in config.questTargetBuff" class="input-group input-group-sm mb-3">
                                 <select v-model.number="quest.building" class="custom-select">
                                     <option value="">无</option>
+                                    <optgroup label="通用">
+                                        <option v-for="item in questList" :value="item">{{item}}</option>
+                                    </optgroup>
                                     <optgroup  v-for="types in buildings" :label="types.type">
                                         <option v-for="item in types.list" :value="item.BuildingName">{{item.BuildingName}}</option>
                                     </optgroup>
@@ -86,6 +89,8 @@
                                 <div class="input-group-append">
                                     <b-dropdown text="快速填写" right size="sm">
                                         <b-dropdown-item class="text-right" @click="quest.buff=0">无</b-dropdown-item>
+                                        <b-dropdown-item class="text-right" @click="quest.buff=20">20%</b-dropdown-item>
+                                        <b-dropdown-item class="text-right" @click="quest.buff=30">30%</b-dropdown-item>
                                         <b-dropdown-item class="text-right" @click="quest.buff=100">100%</b-dropdown-item>
                                         <b-dropdown-item class="text-right" @click="quest.buff=150">150%</b-dropdown-item>
                                         <b-dropdown-item class="text-right" @click="quest.buff=200">200%</b-dropdown-item>
@@ -161,7 +166,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr v-for="item in types.list" :class="[{ 'table-primary': item.rarity===rarity.Common }, { 'table-rare': item.rarity===rarity.Rare },{ 'table-warning': item.rarity===rarity.Legendary }]">
+                                <tr v-for="item in types.list" :class="buildingClass(item)">
                                     <td class="text-nowrap text-center" v-b-tooltip.hover.html.v-info :title="item.tooltip">{{item.BuildingName}}</td>
                                     <td class="text-center">
                                         <b-form-checkbox v-model="item.disabled"></b-form-checkbox>
@@ -247,19 +252,19 @@
                         </div>
 
                         <div class="col-12">
-                            <div class="form-check">
+                            <div class="form-check mb-3">
                                 <input v-model="config.supplyStep50" class="form-check-input" type="checkbox" value="" id="supplyStep50">
                                 <label class="form-check-label" for="supplyStep50">
                                     供货计算以每50%为一级
                                 </label>
                             </div>
-                            <div class="form-check">
+                            <div class="form-check mb-3">
                                 <input v-model="config.allBuildingLevel1" class="form-check-input" type="checkbox" value="" id="allBuildingLevel1">
                                 <label class="form-check-label" for="allBuildingLevel1">
                                     全部建筑按1级计算收益
                                 </label>
                             </div>
-                            <div class="input-group input-group-sm mb-3">
+                            <div class="input-group input-group-sm">
                                 <div class="input-group-prepend">
                                     <label class="input-group-text">升级推荐方案:</label>
                                 </div>
@@ -284,7 +289,7 @@
             <header header-tag="header" class="card-header" role="tab">操作</header>
             <div class="collapse show">
                 <div class="card-body">
-                    <h5>建筑禁用方案操作<small>方案保存仅临时保存，如需刷新页面还能使用，需要保存本地配置</small></h5>
+                    <h5>建筑禁用方案操作&nbsp;&nbsp;<small>方案保存仅临时保存，如需刷新页面还能使用，需要保存本地配置</small></h5>
                     <div class="row">
                         <div class="mb-3 col-12 col-sm-6 col-md-6 col-lg-6 col-xl-3" v-if="buildingProgram.current>-1 && buildingProgram.programs.length>0">
                             <div class="input-group input-group-sm">
@@ -363,8 +368,9 @@
                         <div class="col-12" v-if="calculationIng">
                             <div class="alert alert-info" role="alert">
                                 <h4 class="alert-heading">正在计算，请稍候...</h4>
+                                <p>已用时间:{{progress.useTime}},预计剩余时间:{{progress.needTime}}</p>
                                 <div class="progress">
-                                    <div class="progress-bar progress-bar-striped bg-info progress-bar-animated" role="progressbar" :style="{ width:  progress + '%' }">{{progress}}%</div>
+                                    <div class="progress-bar progress-bar-striped bg-info progress-bar-animated" role="progressbar" :style="{ width:  progress.progress + '%' }">{{progress.progress}}%</div>
                                 </div>
                             </div>
                         </div>
@@ -422,13 +428,7 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <tr v-for="building in program.addition.buildings"
-                                        :class="[
-                                 { 'table-primary': building.building.rarity===rarity.Common },
-                                 { 'table-rare': building.building.rarity===rarity.Rare },
-                                 { 'table-warning': building.building.rarity===rarity.Legendary }
-                                 ]"
-                                    >
+                                    <tr v-for="building in program.addition.buildings" :class="buildingClass(building.building)">
                                         <td class="text-nowrap text-center" v-b-tooltip.hover.html.v-info :title="building.building.tooltip">{{building.building.BuildingName}}</td>
                                         <td class="text-center" v-b-tooltip.hover.html.v-info :title="building.onlineTooltip">{{building.online}}/秒</td>
                                         <td class="text-center" v-b-tooltip.hover.html.v-info :title="building.offlineTooltip">{{building.offline}}/秒</td>
