@@ -189,7 +189,7 @@
                                 <tr v-for="item in types.list" :class="buildingClass(item)">
                                     <td class="text-nowrap text-center" v-b-tooltip.hover.html.v-info :title="item.tooltip"><span v-if="item.use" class="calculator-building-use"><i class="fa fa-home"></i></span>{{item.BuildingName}}</td>
                                     <td class="text-center">
-                                        <b-form-checkbox v-model="item.use"></b-form-checkbox>
+                                        <input type="checkbox" @click="useBuilding($event,types.type,item)" v-model="item.use"></input>
                                     </td>
                                     <td class="text-center">
                                         <b-form-checkbox v-model="item.disabled"></b-form-checkbox>

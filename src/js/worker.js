@@ -99,8 +99,21 @@ buildings.forEach((item)=>{
 });
 
 function getPrograms(list,config) {
+    let realList = [];
+    list.forEach(type=>{
+        let t = {
+            type:type.type,
+            list:[]
+        };
+        type.list.forEach(b=>{
+            if (!b.disabled){
+                t.list.push(b);
+            }
+        });
+        realList.push(t);
+    });
     let programs = [];
-    list.forEach(function (building) {
+    realList.forEach(function (building) {
         let program = [];
         let sel = getFlagArrs(building.list.length,3);
         sel.forEach(function (val) {
@@ -238,6 +251,9 @@ function calculation(list,policy,buff,config) {
     list.forEach(function (building,i) {
         currentBuildings[i] = [];
         building.list.forEach(b=>{
+            if (currentBuildings[i].length>=3){
+                return true;
+            }
             if (b.use){
                 buildings.forEach((item)=>{
                     if (item.BuildingName===b.name){
@@ -245,9 +261,7 @@ function calculation(list,policy,buff,config) {
                         return true;
                     }
                 });
-                if (currentBuildings[i].length>=3){
-                    return true;
-                }
+
             }
         });
     });

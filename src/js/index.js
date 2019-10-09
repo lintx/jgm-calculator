@@ -39,7 +39,7 @@ import {getPolicy} from "./Policy";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.19";
+let version = "0.20";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
@@ -257,11 +257,12 @@ let app = new Vue({
                     list:[]
                 };
                 cls.list.forEach(function (item) {
-                    if (!item.disabled && Number(item.star)>0){
+                    if (Number(item.star)>0){
                         building.list.push({
                             star:Number(item.star),
                             name:item.BuildingName,
                             use:item.use,
+                            disabled:item.disabled,
                             level:getValidLevel(item.level)
                         });
                         count += 1;
@@ -979,29 +980,30 @@ let app = new Vue({
             }
             return "";
         },
-        // useBuilding(type,building){
-        //     if (building.use){
-        //         let count = 0;
-        //         this.buildings.forEach(b=>{
-        //             if (b.type===type){
-        //                 b.list.forEach(item=>{
-        //                     if (item.use){
-        //                         count += 1;
-        //                     }
-        //                 });
-        //                 return true;
-        //             }
-        //         });
-        //         if (count>3){
-        //             this.$bvToast.toast('每种建筑只能摆放3个', {
-        //                 title: '错误',
-        //                 variant: 'danger',//danger,warning,info,primary,secondary,default
-        //                 solid: true
-        //             });
-        //             building.use = false;
-        //         }
-        //     }
-        // },
+        useBuilding(e,type,building){
+            if (e.target.checked){
+                let count = 0;
+                this.buildings.forEach(b=>{
+                    if (b.type===type){
+                        b.list.forEach(item=>{
+                            if (item.use){
+                                count += 1;
+                            }
+                        });
+                        return true;
+                    }
+                });
+                if (count>=3){
+                    this.$bvToast.toast('每种建筑只能摆放3个', {
+                        title: '错误',
+                        variant: 'danger',//danger,warning,info,primary,secondary,default
+                        solid: true
+                    });
+                    e.preventDefault();
+                    building.use = false;
+                }
+            }
+        },
         selectPolicy(){
             this.policyGlobalBuffs = getPolicyBuffs(this);
         }
