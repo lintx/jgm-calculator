@@ -5,6 +5,7 @@ import {renderSize} from "./Utils";
 
 class Building{
     constructor(name,rarity,type,baseMoney){
+        this.use = false;
         this.disabled = false;
         this.level = 1;
         this.star = 0;
@@ -85,9 +86,9 @@ let BuildingRarity = {
 };
 
 let BuildingType = {
-    Residence:"住宅",
+    Industrial:"工业",
     Business:"商业",
-    Industrial:"工业"
+    Residence:"住宅"
 };
 
 export {

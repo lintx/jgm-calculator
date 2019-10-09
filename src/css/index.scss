@@ -34,6 +34,11 @@ $building_legendary_text_color : #212529 !default;
   }
 }
 
+.calculator-building-use{
+  color: #33842f;
+  text-shadow: #ffffff 0 0 3px;
+}
+
 .calculator-level,.calculator-star{
   min-width: 56px;
 }

@@ -5,7 +5,8 @@
     <title>家国梦建筑摆放计算器</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
-    <link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.staticfile.org/font-awesome/5.11.2/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <div id="app" class="container">
@@ -44,7 +45,7 @@
                             <h5>政策配置</h5>
                             <div class="input-group input-group-sm mb-3">
                                 <div class="input-group-prepend">
-                                    <label class="input-group-text" v-b-tooltip.hover.html.v-info :title="donePolicyTooltip">当前政策阶段:</label>
+                                    <label class="input-group-text">当前政策阶段:</label>
                                 </div>
                                 <select @change="switchPolicyStep" v-model.number="policy.step" class="custom-select">
                                     <option v-for="i in 10" :value="i">第 {{i}} 阶段</option>
@@ -52,9 +53,9 @@
                             </div>
                             <div class="input-group input-group-sm mb-3" v-for="level in policy.levels">
                                 <div class="input-group-prepend">
-                                    <label class="input-group-text" v-b-tooltip.hover.html.v-info :title="currentPolicyTooltip(level)">{{level.title}} 等级:</label>
+                                    <label class="input-group-text">{{level.title}} 等级:</label>
                                 </div>
-                                <select v-model.number="level.level" class="custom-select">
+                                <select @change="selectPolicy" v-model.number="level.level" class="custom-select">
                                     <option v-for="i in 6" :value="i-1">{{i-1}} 级</option>
                                 </select>
                             </div>
@@ -71,6 +72,49 @@
                         </div>
 
                         <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mb-3">
+                            <h5>政策总加成</h5>
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">加成类型</th>
+                                    <th class="text-center">加成比例</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr v-for="(buff,title) in policyGlobalBuffs">
+                                    <td class="text-center text-nowrap">{{title}}</td>
+                                    <td class="text-left text-nowrap">{{buff}}%</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4" v-for="buffSource in buffs">
+                            <h5>{{buffSource.type}}</h5>
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">加成类型</th>
+                                    <th class="text-center">加成比例</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr v-for="buff in buffSource.list">
+                                    <td class="text-center text-nowrap">{{buff.target}}</td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input @focus="$event.target.select()" v-model.number="buff.buff" type="number" class="form-control text-right">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4">
                             <h5>城市任务加成</h5>
                             <div v-for="quest in config.questTargetBuff" class="input-group input-group-sm mb-3">
                                 <select v-model.number="quest.building" class="custom-select">
@@ -100,31 +144,6 @@
                             <div class="mb-3">
                                 <button type="button" @click="clearQuestData" class="btn btn-info btn-sm" v-b-tooltip.hover.v-info title="用于完成了一个城市任务时，快速清除上一阶段的城市任务数据">清除任务数据</button>
                             </div>
-                        </div>
-
-                        <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4" v-for="buffSource in buffs">
-                            <h5>{{buffSource.type}}</h5>
-                            <table class="table table-bordered table-sm">
-                                <thead>
-                                <tr>
-                                    <th class="text-center">加成类型</th>
-                                    <th class="text-center">加成比例</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr v-for="buff in buffSource.list">
-                                    <td class="text-center text-nowrap">{{buff.target}}</td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input @focus="$event.target.select()" v-model.number="buff.buff" type="number" class="form-control text-right">
-                                            <div class="input-group-append">
-                                                <span class="input-group-text">%</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </b-card-body>
@@ -160,6 +179,7 @@
                                 <thead>
                                 <tr>
                                     <th class="text-center text-nowrap">名称</th>
+                                    <th class="text-center text-nowrap">已摆</th>
                                     <th class="text-center text-nowrap">禁用</th>
                                     <th class="text-center text-nowrap">星级</th>
                                     <th class="text-center text-nowrap">等级</th>
@@ -167,7 +187,10 @@
                                 </thead>
                                 <tbody>
                                 <tr v-for="item in types.list" :class="buildingClass(item)">
-                                    <td class="text-nowrap text-center" v-b-tooltip.hover.html.v-info :title="item.tooltip">{{item.BuildingName}}</td>
+                                    <td class="text-nowrap text-center" v-b-tooltip.hover.html.v-info :title="item.tooltip"><span v-if="item.use" class="calculator-building-use"><i class="fa fa-home"></i></span>{{item.BuildingName}}</td>
+                                    <td class="text-center">
+                                        <b-form-checkbox v-model="item.use"></b-form-checkbox>
+                                    </td>
                                     <td class="text-center">
                                         <b-form-checkbox v-model="item.disabled"></b-form-checkbox>
                                     </td>
@@ -429,7 +452,7 @@
                                     </thead>
                                     <tbody>
                                     <tr v-for="building in program.addition.buildings" :class="buildingClass(building.building)">
-                                        <td class="text-nowrap text-center" v-b-tooltip.hover.html.v-info :title="building.building.tooltip">{{building.building.BuildingName}}</td>
+                                        <td class="text-nowrap text-center" v-b-tooltip.hover.html.v-info :title="building.building.tooltip"><span v-if="building.building.use" class="calculator-building-use"><i class="fa fa-home"></i></span>{{building.building.BuildingName}}</td>
                                         <td class="text-center" v-b-tooltip.hover.html.v-info :title="building.onlineTooltip">{{building.online}}/秒</td>
                                         <td class="text-center" v-b-tooltip.hover.html.v-info :title="building.offlineTooltip">{{building.offline}}/秒</td>
                                         <td class="text-center" v-b-tooltip.hover.html.v-info :title="building.tooltip">{{building.toLevel}}</td>

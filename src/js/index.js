@@ -39,7 +39,7 @@ import {getPolicy} from "./Policy";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.18";
+let version = "0.19";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
@@ -142,21 +142,19 @@ let app = new Vue({
                 needTime:"-"
             },
             calculationIng:false,
-            questList:[]
+            questList:[],
+            policyGlobalBuffs:{}
         };
-        Object.keys(BuffSource).forEach((key)=>{
-            let source = BuffSource[key];
-            if (source===BuffSource.Building || source===BuffSource.Policy){
+        Object.keys(BuffRange).forEach((rkey)=>{
+            let range = BuffRange[rkey];
+            if (range===BuffRange.Targets){
                 return;
             }
-            if (source===BuffSource.Quest){
-                Object.keys(BuffRange).forEach((rkey)=>{
-                    let range = BuffRange[rkey];
-                    if (range===BuffRange.Targets){
-                        return;
-                    }
-                    data.questList.push(range);
-                });
+            data.questList.push(range);
+        });
+        Object.keys(BuffSource).forEach((key)=>{
+            let source = BuffSource[key];
+            if (source===BuffSource.Building || source===BuffSource.Policy || source===BuffSource.Quest){
                 return;
             }
             let buff = {
@@ -198,6 +196,7 @@ let app = new Vue({
                                     db.star = item.star;
                                     db.disabled = item.disabled;
                                     db.level = getValidLevel(item.level);
+                                    db.use = item.use;
                                 }
                             });
                         });
@@ -239,65 +238,12 @@ let app = new Vue({
         if (!data.policy.levels || data.policy.levels.length<=0){
             data.policy.levels = getPolicyLevelData(data.policy.step);
         }
+        data.policyGlobalBuffs = getPolicyBuffs(data);
 
         return data;
     },
     computed: {
         // 计算属性的 getter
-        donePolicyTooltip: function () {
-            if (this.policy.step<=1){
-                return "";
-            }
-            // `this` 指向 vm 实例
-            //全局的buff
-            let globalBuffs = new Buffs();
-            //添加政策buff
-            for (let i=1;i<this.policy.step;i++){
-                getPolicy(i).policys.forEach((p)=>{
-                    globalBuffs.add(BuffSource.Policy,p.buff(5));
-                });
-            }
-            let buffs = {};
-            Object.keys(BuffRange).forEach((rkey)=>{
-                let range = BuffRange[rkey];
-                if (range===BuffRange.Targets){
-                    return;
-                }
-                buffs[range] = 0;
-            });
-            globalBuffs.Policy.forEach(buff=>{
-                buffs[buff.range] += buff.buff * 100;
-            });
-            let title = "";
-            if (this.policy.step===2){
-                title = "第 1 阶段政策总加成:";
-            }else {
-                title = "第 1 至第 " + (this.policy.step-1) + " 阶段政策总加成:";
-            }
-            let tempArr = [title];
-            Object.keys(buffs).forEach(name=>{
-                tempArr.push(name + ":" + buffs[name] + "%");
-            });
-            return tempArr.join('<br />');
-        },
-        currentPolicyTooltip:function () {
-            let policys = getPolicy(this.policy.step).policys;
-            let policyObj = {};
-            policys.forEach(policy=>{
-                let b = {0:""};
-                policy.policyLevels.forEach(l=>{
-                    b[l.level] = l.buff.target + ":" + l.buff.buff + "%";
-                });
-                policyObj[policy.title] = b;
-            });
-            return function(level){
-                if (level.level>0){
-                    return level.level + " 级 " + level.title + "政策加成:<br />" + policyObj[level.title][level.level];
-                }else {
-                    return "";
-                }
-            };
-        }
     },
     methods:{
         calculation() {
@@ -315,6 +261,7 @@ let app = new Vue({
                         building.list.push({
                             star:Number(item.star),
                             name:item.BuildingName,
+                            use:item.use,
                             level:getValidLevel(item.level)
                         });
                         count += 1;
@@ -394,6 +341,7 @@ let app = new Vue({
                             building:item.BuildingName,
                             star:Number(item.star),
                             disabled:item.disabled,
+                            use:item.use,
                             level:getValidLevel(item.level)
                         });
                     }
@@ -578,48 +526,6 @@ let app = new Vue({
                 }
             });
         },
-        stop() {
-            try {
-                worker.terminate();
-                worker = undefined;
-                this.calculationIng = false;
-                this.progress = {
-                    progress:0,
-                    useTime:"-",
-                    needTime:"-"
-                }
-            }catch (e) {
-
-            }
-        },
-        levelKeyDown(e,item){
-            if (e.code==="ArrowUp"){
-                if (e.shiftKey){
-                    item.level += 100;
-                }else if (e.ctrlKey){
-                    item.level += 10;
-                }else {
-                    item.level += 1;
-                }
-            }else if (e.code==="ArrowDown"){
-                if (e.shiftKey){
-                    item.level -= 100;
-                }else if (e.ctrlKey){
-                    item.level -= 10;
-                }else {
-                    item.level -= 1;
-                }
-            }else if (e.code==="PageUp"){
-                item.level += 1000;
-            }else if (e.code==="PageDown"){
-                item.level -= 1000;
-            }else {
-                return;
-            }
-            e.preventDefault();
-            item.level = Math.min(2000,item.level);
-            item.level = Math.max(1,item.level);
-        },
         exportConfig(){
             const h = this.$createElement;
             const messageVNode = h('div', { class: ['foobar'] }, [
@@ -727,8 +633,51 @@ let app = new Vue({
                 });
             }
         },
+        stop() {
+            try {
+                worker.terminate();
+                worker = undefined;
+                this.calculationIng = false;
+                this.progress = {
+                    progress:0,
+                    useTime:"-",
+                    needTime:"-"
+                }
+            }catch (e) {
+
+            }
+        },
+        levelKeyDown(e,item){
+            if (e.code==="ArrowUp"){
+                if (e.shiftKey){
+                    item.level += 100;
+                }else if (e.ctrlKey){
+                    item.level += 10;
+                }else {
+                    item.level += 1;
+                }
+            }else if (e.code==="ArrowDown"){
+                if (e.shiftKey){
+                    item.level -= 100;
+                }else if (e.ctrlKey){
+                    item.level -= 10;
+                }else {
+                    item.level -= 1;
+                }
+            }else if (e.code==="PageUp"){
+                item.level += 1000;
+            }else if (e.code==="PageDown"){
+                item.level -= 1000;
+            }else {
+                return;
+            }
+            e.preventDefault();
+            item.level = Math.min(2000,item.level);
+            item.level = Math.max(1,item.level);
+        },
         switchPolicyStep() {
             this.policy.levels = getPolicyLevelData(this.policy.step);
+            this.selectPolicy();
         },
         clearQuestData(){
             this.$bvModal.msgBoxConfirm('是否要把城市任务加成清空？清空后如果没有保存配置，刷新页面后即可恢复。', {
@@ -1029,6 +978,32 @@ let app = new Vue({
                     return "building-legendary";
             }
             return "";
+        },
+        // useBuilding(type,building){
+        //     if (building.use){
+        //         let count = 0;
+        //         this.buildings.forEach(b=>{
+        //             if (b.type===type){
+        //                 b.list.forEach(item=>{
+        //                     if (item.use){
+        //                         count += 1;
+        //                     }
+        //                 });
+        //                 return true;
+        //             }
+        //         });
+        //         if (count>3){
+        //             this.$bvToast.toast('每种建筑只能摆放3个', {
+        //                 title: '错误',
+        //                 variant: 'danger',//danger,warning,info,primary,secondary,default
+        //                 solid: true
+        //             });
+        //             building.use = false;
+        //         }
+        //     }
+        // },
+        selectPolicy(){
+            this.policyGlobalBuffs = getPolicyBuffs(this);
         }
     }
 });
@@ -1078,4 +1053,31 @@ function configList(localConfig) {
     }
 
     return list;
+}
+
+function getPolicyBuffs(data){
+    let globalBuffs = new Buffs();
+    for (let i=1;i<=data.policy.step;i++){
+        getPolicy(i).policys.forEach((p)=>{
+            let level = 5;
+            if (i===data.policy.step){
+                data.policy.levels.forEach((l)=>{
+                    if (p.title===l.title){
+                        level = l.level;
+                        return true;
+                    }
+                })
+            }
+            if (level===0){
+                return;
+            }
+            globalBuffs.add(BuffSource.Policy,p.buff(level));
+        })
+    }
+    let buffs = {};
+    globalBuffs.Policy.forEach(buff=>{
+        buffs[buff.range] = buffs[buff.range] || 0;
+        buffs[buff.range] += buff.buff * 100;
+    });
+    return buffs;
 }
