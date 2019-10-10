@@ -55,7 +55,7 @@
                                 <div class="input-group-prepend">
                                     <label class="input-group-text">{{level.title}} 等级:</label>
                                 </div>
-                                <select @change="selectPolicy" v-model.number="level.level" class="custom-select">
+                                <select v-model.number="level.level" class="custom-select">
                                     <option v-for="i in 6" :value="i-1">{{i-1}} 级</option>
                                 </select>
                             </div>
@@ -141,6 +141,22 @@
                                     </b-dropdown>
                                 </div>
                             </div>
+
+                            <div class="input-group input-group-sm mb-3">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text">快速填写任务加成:</label>
+                                </div>
+                                <select v-model.number="allQuests.selectIndex" class="custom-select">
+                                    <option v-for="(quests,index) in allQuests.data" :value="index">{{quests.name}}</option>
+                                </select>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6 mb-2" v-for="buffs in allQuests.data[allQuests.selectIndex].buffs">
+                                    <button type="button" @click="selectQuestBuffs(buffs)" class="btn btn-info btn-sm btn-block" v-html="getQuestsBuffText(buffs)"></button>
+                                </div>
+                            </div>
+
                             <div class="mb-3">
                                 <button type="button" @click="clearQuestData" class="btn btn-info btn-sm" v-b-tooltip.hover.v-info title="用于完成了一个城市任务时，快速清除上一阶段的城市任务数据">清除任务数据</button>
                             </div>
@@ -281,12 +297,22 @@
                                     供货计算以每50%为一级
                                 </label>
                             </div>
-                            <div class="form-check mb-3">
-                                <input v-model="config.allBuildingLevel1" class="form-check-input" type="checkbox" value="" id="allBuildingLevel1">
-                                <label class="form-check-label" for="allBuildingLevel1">
-                                    全部建筑按1级计算收益
-                                </label>
+
+                            <div class="input-group input-group-sm mb-3">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                        <input v-model.number="config.allBuildingLevel1" type="checkbox" value="" id="allBuildingLevel1">
+                                        <label class="form-check-label form-check-label-sm" for="allBuildingLevel1">
+                                            全部建筑按特定等级计算收益
+                                        </label>
+                                    </div>
+                                </div>
+                                <input @focus="$event.target.select()" v-model="config.allBuildingLevel" type="text" class="form-control text-right" placeholder="等级">
+                                <div class="input-group-append">
+                                    <span class="input-group-text">级</span>
+                                </div>
                             </div>
+
                             <div class="input-group input-group-sm">
                                 <div class="input-group-prepend">
                                     <label class="input-group-text">升级推荐方案:</label>
@@ -388,22 +414,7 @@
             <div class="collapse show">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-12" v-if="calculationIng">
-                            <div class="alert alert-info" role="alert">
-                                <h4 class="alert-heading">正在计算，请稍候...</h4>
-                                <p>已用时间:{{progress.useTime}},预计剩余时间:{{progress.needTime}}</p>
-                                <div class="progress">
-                                    <div class="progress-bar progress-bar-striped bg-info progress-bar-animated" role="progressbar" :style="{ width:  progress.progress + '%' }">{{progress.progress}}%</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12" v-if="!calculationIng && programs.length===0">
-                            <div class="alert alert-info" role="alert">
-                                <h4 class="alert-heading">点击上面的“开始计算”并等待计算完毕后查看</h4>
-                            </div>
-                        </div>
-
-                        <div class="col-12">
+                        <div class="col-12 mb-4">
                             <b-card no-body>
                                 <b-card-header header-tag="header" class="p-1" role="tab">
                                     <b-button href="#" variant="link" v-b-toggle.collapse_programs_tips>点击查看提示</b-button>
@@ -425,6 +436,28 @@
                                     </b-card-body>
                                 </b-collapse>
                             </b-card>
+                        </div>
+
+                        <div class="col-12" v-if="calculationIng">
+                            <div class="alert alert-info" role="alert">
+                                <h4 class="alert-heading">正在计算，请稍候...</h4>
+                                <p>已用时间:{{progress.useTime}},预计剩余时间:{{progress.needTime}}</p>
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped bg-info progress-bar-animated" role="progressbar" :style="{ width:  progress.progress + '%' }">{{progress.progress}}%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12" v-if="!calculationIng && programs.length===0">
+                            <div class="alert alert-info" role="alert">
+                                <h4 class="alert-heading">点击上面的“开始计算”并等待计算完毕后查看</h4>
+                            </div>
+                        </div>
+
+                        <div class="col-12" v-if="programs.length>0">
+                            <div class="alert alert-info mb-0" role="alert">
+                                <div>计算完成<span v-if="workerUseTime!=='-'">，本次计算总耗时：{{workerUseTime}}</span></div>
+                            </div>
                         </div>
 
                         <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4 mt-4" v-for="program in programs">

@@ -91,8 +91,44 @@ let BuildingType = {
     Residence:"住宅"
 };
 
+let BuildingNames = {
+    Chalet:"木屋",
+    SteelStructureHouse:"钢结构房",
+    Bungalow:"平房",
+    SmallApartment:"小型公寓",
+    Residential:"居民楼",
+    TalentApartment:"人才公寓",
+    GardenHouse:"花园洋房",
+    ChineseSmallBuilding:"中式小楼",
+    SkyVilla:"空中别墅",
+    RevivalMansion:"复兴公馆",
+
+    ConvenienceStore:"便利店",
+    School:"学校",
+    ClothingStore:"服装店",
+    HardwareStore:"五金店",
+    VegetableMarket:"菜市场",
+    BookCity:"图书城",
+    BusinessCenter:"商贸中心",
+    GasStation:"加油站",
+    FolkFood:"民食斋",
+    MediaVoice:"媒体之声",
+
+    WoodFactory:"木材厂",
+    PaperMill:"造纸厂",
+    WaterPlant:"水厂",
+    PowerPlant:"电厂",
+    FoodFactory:"食品厂",
+    SteelPlant:"钢铁厂",
+    TextileMill:"纺织厂",
+    PartsFactory:"零件厂",
+    TencentMachinery:"企鹅机械",
+    PeoplesOil:"人民石油"
+}
+
 export {
     Building,
     BuildingRarity,
-    BuildingType
+    BuildingType,
+    BuildingNames
 }

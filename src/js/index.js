@@ -1,45 +1,47 @@
 import Vue from "vue";
 import {BuildingRarity, BuildingType} from "./Building";
-import Chalet from "./Builds/Chalet";
-import SteelStructureHouse from "./Builds/SteelStructureHouse";
-import Bungalow from "./Builds/Bungalow";
-import SmallApartment from "./Builds/SmallApartment";
-import Residential from "./Builds/Residential";
-import TalentApartment from "./Builds/TalentApartment";
-import GardenHouse from "./Builds/GardenHouse";
-import ChineseSmallBuilding from "./Builds/ChineseSmallBuilding";
-import SkyVilla from "./Builds/SkyVilla";
-import RevivalMansion from "./Builds/RevivalMansion";
-import ConvenienceStore from "./Builds/ConvenienceStore";
-import School from "./Builds/School";
-import ClothingStore from "./Builds/ClothingStore";
-import HardwareStore from "./Builds/HardwareStore";
-import VegetableMarket from "./Builds/VegetableMarket";
-import BookCity from "./Builds/BookCity";
-import BusinessCenter from "./Builds/BusinessCenter";
-import GasStation from "./Builds/GasStation";
-import FolkFood from "./Builds/FolkFood";
-import MediaVoice from "./Builds/MediaVoice";
-import WoodFactory from "./Builds/WoodFactory";
-import PaperMill from "./Builds/PaperMill";
-import WaterPlant from "./Builds/WaterPlant";
-import PowerPlant from "./Builds/PowerPlant";
-import FoodFactory from "./Builds/FoodFactory";
-import SteelPlant from "./Builds/SteelPlant";
-import TextileMill from "./Builds/TextileMill";
-import PartsFactory from "./Builds/PartsFactory";
-import TencentMachinery from "./Builds/TencentMachinery";
-import PeoplesOil from "./Builds/PeoplesOil";
+import Chalet from "./Builds/Residence/Chalet";
+import SteelStructureHouse from "./Builds/Residence/SteelStructureHouse";
+import Bungalow from "./Builds/Residence/Bungalow";
+import SmallApartment from "./Builds/Residence/SmallApartment";
+import Residential from "./Builds/Residence/Residential";
+import TalentApartment from "./Builds/Residence/TalentApartment";
+import GardenHouse from "./Builds/Residence/GardenHouse";
+import ChineseSmallBuilding from "./Builds/Residence/ChineseSmallBuilding";
+import SkyVilla from "./Builds/Residence/SkyVilla";
+import RevivalMansion from "./Builds/Residence/RevivalMansion";
+import ConvenienceStore from "./Builds/Business/ConvenienceStore";
+import School from "./Builds/Business/School";
+import ClothingStore from "./Builds/Business/ClothingStore";
+import HardwareStore from "./Builds/Business/HardwareStore";
+import VegetableMarket from "./Builds/Business/VegetableMarket";
+import BookCity from "./Builds/Business/BookCity";
+import BusinessCenter from "./Builds/Business/BusinessCenter";
+import GasStation from "./Builds/Business/GasStation";
+import FolkFood from "./Builds/Business/FolkFood";
+import MediaVoice from "./Builds/Business/MediaVoice";
+import WoodFactory from "./Builds/Industrial/WoodFactory";
+import PaperMill from "./Builds/Industrial/PaperMill";
+import WaterPlant from "./Builds/Industrial/WaterPlant";
+import PowerPlant from "./Builds/Industrial/PowerPlant";
+import FoodFactory from "./Builds/Industrial/FoodFactory";
+import SteelPlant from "./Builds/Industrial/SteelPlant";
+import TextileMill from "./Builds/Industrial/TextileMill";
+import PartsFactory from "./Builds/Industrial/PartsFactory";
+import TencentMachinery from "./Builds/Industrial/TencentMachinery";
+import PeoplesOil from "./Builds/Industrial/PeoplesOil";
 import {Buff, BuffRange, Buffs, BuffSource} from "./Buff";
 import BootstrapVue from "bootstrap-vue";
 import PortalVue from 'portal-vue'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import "../css/index.scss";
 import {getPolicy} from "./Policy";
+import quests from "./Quests";
+import {getValidLevel} from "./Utils";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.20";
+let version = "0.21";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
@@ -53,6 +55,7 @@ let app = new Vue({
             config:{
                 supplyStep50:false,
                 allBuildingLevel1:false,
+                allBuildingLevel:1,
                 shineChinaBuff:0,
                 showBuffConfig:true,
                 showBuildingConfig:true,
@@ -141,9 +144,13 @@ let app = new Vue({
                 useTime:"-",
                 needTime:"-"
             },
+            workerUseTime:"-",
             calculationIng:false,
             questList:[],
-            policyGlobalBuffs:{}
+            allQuests:{
+                data:quests,
+                selectIndex:0
+            }
         };
         Object.keys(BuffRange).forEach((rkey)=>{
             let range = BuffRange[rkey];
@@ -238,12 +245,42 @@ let app = new Vue({
         if (!data.policy.levels || data.policy.levels.length<=0){
             data.policy.levels = getPolicyLevelData(data.policy.step);
         }
-        data.policyGlobalBuffs = getPolicyBuffs(data);
-
         return data;
     },
     computed: {
         // 计算属性的 getter
+        policyGlobalBuffs(){
+            let globalBuffs = new Buffs();
+            for (let i=1;i<=this.policy.step;i++){
+                getPolicy(i).policys.forEach((p)=>{
+                    let level = 5;
+                    if (i===this.policy.step){
+                        this.policy.levels.forEach((l)=>{
+                            if (p.title===l.title){
+                                level = l.level;
+                                return true;
+                            }
+                        })
+                    }
+                    if (level===0){
+                        return;
+                    }
+                    globalBuffs.add(BuffSource.Policy,p.buff(level));
+                })
+            }
+            let buffs = {};
+            Object.keys(BuffRange).forEach(key=>{
+                let range = BuffRange[key];
+                if (range===BuffRange.Targets){
+                    return;
+                }
+                buffs[range] = 0;
+            });
+            globalBuffs.Policy.forEach(buff=>{
+                buffs[buff.range] += buff.buff * 100;
+            });
+            return buffs;
+        }
     },
     methods:{
         calculation() {
@@ -290,6 +327,7 @@ let app = new Vue({
                         _self.calculationIng = false;
                         worker.terminate();
                         worker = undefined;
+                        _self.workerUseTime = _self.progress.useTime;
                         _self.progress = {
                             progress:0,
                             useTime:"-",
@@ -678,7 +716,6 @@ let app = new Vue({
         },
         switchPolicyStep() {
             this.policy.levels = getPolicyLevelData(this.policy.step);
-            this.selectPolicy();
         },
         clearQuestData(){
             this.$bvModal.msgBoxConfirm('是否要把城市任务加成清空？清空后如果没有保存配置，刷新页面后即可恢复。', {
@@ -693,13 +730,6 @@ let app = new Vue({
                 centered: true
             }).then(value => {
                 if (value){
-                    this.buffs.forEach(buff=>{
-                        if (buff.type===BuffSource.Quest){
-                            buff.list.forEach(item=>{
-                                item.buff = 0;
-                            });
-                        }
-                    });
                     this.config.questTargetBuff.forEach(target=>{
                         target.building = "";
                         target.buff = 0;
@@ -1004,29 +1034,30 @@ let app = new Vue({
                 }
             }
         },
-        selectPolicy(){
-            this.policyGlobalBuffs = getPolicyBuffs(this);
+        getQuestsBuffText(buffs){
+            let arr =[];
+            buffs.forEach(buff=>{
+                arr.push(buff.name + " " + buff.buff + "%");
+            });
+            return arr.join("<br />");
+        },
+        selectQuestBuffs(buffs){
+            this.config.questTargetBuff.forEach(target=>{
+                target.building = "";
+                target.buff = 0;
+            });
+            buffs.forEach((buff,index)=>{
+                this.config.questTargetBuff[index].building = buff.name;
+                this.config.questTargetBuff[index].buff = buff.buff;
+            });
+            this.$bvToast.toast('填写成功', {
+                title: '提示',
+                variant: 'success',//danger,warning,info,primary,secondary,default
+                solid: true
+            });
         }
     }
 });
-
-function getValidLevel(level) {
-    if (typeof level!=="number"){
-        if (isNaN(level)){
-            return 1;
-        }else {
-            level = Number(level);
-        }
-    }
-    level = Math.floor(level);
-    if (level<1){
-        return 1;
-    }
-    if (level>2000){
-        return 2000;
-    }
-    return level;
-}
 
 function getPolicyLevelData(step) {
     let policy = getPolicy(step);
@@ -1055,31 +1086,4 @@ function configList(localConfig) {
     }
 
     return list;
-}
-
-function getPolicyBuffs(data){
-    let globalBuffs = new Buffs();
-    for (let i=1;i<=data.policy.step;i++){
-        getPolicy(i).policys.forEach((p)=>{
-            let level = 5;
-            if (i===data.policy.step){
-                data.policy.levels.forEach((l)=>{
-                    if (p.title===l.title){
-                        level = l.level;
-                        return true;
-                    }
-                })
-            }
-            if (level===0){
-                return;
-            }
-            globalBuffs.add(BuffSource.Policy,p.buff(level));
-        })
-    }
-    let buffs = {};
-    globalBuffs.Policy.forEach(buff=>{
-        buffs[buff.range] = buffs[buff.range] || 0;
-        buffs[buff.range] += buff.buff * 100;
-    });
-    return buffs;
 }

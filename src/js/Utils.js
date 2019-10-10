@@ -93,8 +93,27 @@ function getFlagArrs(m, n) {
     return resultArrs;
 }
 
+function getValidLevel(level) {
+    if (typeof level!=="number"){
+        if (isNaN(level)){
+            return 1;
+        }else {
+            level = Number(level);
+        }
+    }
+    level = Math.floor(level);
+    if (level<1){
+        return 1;
+    }
+    if (level>2000){
+        return 2000;
+    }
+    return level;
+}
+
 export {
     renderSize,
     getFlagArrs,
-    toNumber
+    toNumber,
+    getValidLevel
 }
