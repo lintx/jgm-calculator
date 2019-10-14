@@ -4,6 +4,7 @@ import {Buff, BuffRange} from "../../Buff";
 class MediaVoice extends Building{
     constructor(){
         super(BuildingNames.MediaVoice,BuildingRarity.Legendary,BuildingType.Business,1.615);
+        this.initBuffs();
     }
 
     initBuffs(){

@@ -41,7 +41,7 @@ import {getValidLevel} from "./Utils";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.21";
+let version = "0.22";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
@@ -176,11 +176,6 @@ let app = new Vue({
                 buff.list.push(new Buff(range,range,0));
             });
             data.buffs.push(buff);
-        });
-        data.buildings.forEach((building)=>{
-            building.list.forEach((item)=>{
-                item.initBuffs();
-            });
         });
 
         let localConfig = this.localConfig();
@@ -1054,6 +1049,46 @@ let app = new Vue({
                 title: '提示',
                 variant: 'success',//danger,warning,info,primary,secondary,default
                 solid: true
+            });
+        },
+        showRoute(routes){
+            console.log(routes)
+            const h = this.$createElement;
+            let tr = [];
+            routes.forEach((route)=>{
+                tr.push(h('tr',{},[
+                    h('td',{class:['text-center','text-nowrap']},[route.building.BuildingName]),
+                    h('td',{class:['text-center','text-nowrap']},[route.toLevel]),
+                    h('td',{class:['text-center','text-nowrap']},[route.needMoney]),
+                    h('td',{class:['text-center','text-nowrap']},[route.needTime])
+                ]));
+            });
+
+            let table = h('table',{class:['table', 'table-bordered', 'table-sm']},[
+                h('thead',{},[
+                    h('tr',{},[
+                        h('th',{class:['text-center','text-nowrap']},['建筑']),
+                        h('th',{class:['text-center','text-nowrap']},['目标']),
+                        h('th',{class:['text-center','text-nowrap']},['花费']),
+                        h('th',{class:['text-center','text-nowrap']},['用时'])
+                    ])
+                ]),
+                h('tbody',{},tr)
+            ]);
+
+            let content = [
+                h('p',{},['本方案推荐升级的路线。'])
+            ];
+            content.push(table);
+
+            const messageVNode = h('div', { class: ['foobar'] }, content);
+            this.$bvModal.msgBoxOk([messageVNode], {
+                title: '升级路线',
+                buttonSize: 'sm',
+                okTitle: '确认',
+                centered: true,
+                size: 'md',
+                scrollable:true
             });
         }
     }

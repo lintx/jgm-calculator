@@ -4,6 +4,7 @@ import {Buff, BuffRange} from "../../Buff";
 class RevivalMansion extends Building{
     constructor(){
         super(BuildingNames.RevivalMansion,BuildingRarity.Legendary,BuildingType.Residence,1.672);
+        this.initBuffs();
     }
 
     initBuffs(){

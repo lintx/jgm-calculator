@@ -4,6 +4,7 @@ import {Buff, BuffRange} from "../../Buff";
 class HardwareStore extends Building{
     constructor(){
         super(BuildingNames.HardwareStore,BuildingRarity.Common,BuildingType.Business,1);
+        this.initBuffs();
     }
 
     initBuffs(){

@@ -212,7 +212,7 @@ module.exports = function (env, argv) {
         filename: "index.html",
 
         //模板文件（源文件）
-        template: "index.html",
+        template: "./src/index.html",
 
         //插入的内容在哪里（true|'head'|'body'|false）
         inject: true,

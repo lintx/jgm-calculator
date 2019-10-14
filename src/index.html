@@ -501,6 +501,7 @@
                                     <div>
                                         <button type="button" @click="selectProgram(program.addition.buildings)" class="btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="将本方案的建筑之外的所有建筑禁用">应用方案</button>
                                         <button type="button" @click="syncProgramLevel(program.addition.buildings)" class="btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="将本方案的推荐等级同步到设置中" v-if="program.addition.useMoney!==0">同步等级</button>
+                                        <button type="button" @click="showRoute(program.addition.route)" class="btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="查看推荐升级方案路线" v-if="program.addition.route.length>0">升级路线</button>
                                     </div>
                                 </div>
                             </div>

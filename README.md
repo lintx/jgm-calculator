@@ -14,3 +14,4 @@
 [https://github.com/euyuil/JiaGuoMengCalculator](https://github.com/euyuil/JiaGuoMengCalculator)
 
 <img src="./screenshot/screenshot.png" style="zoom:40%" />
+<img src="./screenshot/screenshot1.png" style="zoom:40%" />

@@ -91,9 +91,6 @@ let buildings = [
     new TencentMachinery(),
     new PeoplesOil()
 ];
-buildings.forEach((item)=>{
-    item.initBuffs();
-});
 
 function initBuildings(list,config) {
     let availableBuildings = [];
@@ -414,6 +411,11 @@ function calculation(list,policy,buff,config) {
             }
         });
 
+        program.addition.route.forEach(route=>{
+            route.needMoney = renderSize(route.needMoney);
+            route.needTime = formatSeconds(route.needTime);
+        });
+
         program.addition.needTime = formatSeconds(program.addition.needTime);
         program.addition.maxNeedTime = formatSeconds(program.addition.useMoney / program.addition.online);
         program.addition.toTps = renderSize(program.addition.toTps);
@@ -435,7 +437,8 @@ function calculationAddition(globalBuffs, temp) {
         toTps:0,
         useMoney:0,
         needTime:0,
-        maxNeedTime:0
+        maxNeedTime:0,
+        route:[]
     };
 
     //计算这个组合的所有buff，先拿出公共buff
@@ -487,6 +490,25 @@ function calculationAddition(globalBuffs, temp) {
     };
 }
 
+function addRoute(addition, u) {
+    let needTime = u.cost/addition.toTps;
+    if (addition.route.length>0){
+        let last = addition.route[addition.route.length - 1];
+        if (last.building===u.building.building){
+            last.toLevel = u.building.toLevel;
+            last.needMoney += u.cost;
+            last.needTime += needTime;
+            return;
+        }
+    }
+    addition.route.push({
+        building:u.building.building,
+        toLevel:u.building.toLevel,
+        needMoney:u.cost,
+        needTime:needTime
+    });
+}
+
 //按模式进行模拟升级
 function upgradeWithMode(addition, mode, value) {
     if (mode===1){
@@ -500,6 +522,7 @@ function upgradeWithMode(addition, mode, value) {
             }
             u.building.toOnline += u.addMoney;
             addition.needTime += u.cost / addition.toTps;
+            addRoute(addition,u);
             addition.toTps += u.addMoney;
             addition.useMoney += u.cost;
             count += 1;
@@ -520,6 +543,7 @@ function upgradeWithMode(addition, mode, value) {
                 break;
             }
             u.building.toOnline += u.addMoney;
+            addRoute(addition,u);
             addition.toTps += u.addMoney;
             addition.useMoney += u.cost;
         }
@@ -533,6 +557,7 @@ function upgradeWithMode(addition, mode, value) {
             }
             u.building.toOnline += u.addMoney;
             addition.needTime += u.cost / addition.toTps;
+            addRoute(addition,u);
             addition.toTps += u.addMoney;
             addition.useMoney += u.cost;
         }

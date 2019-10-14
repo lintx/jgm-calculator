@@ -4,6 +4,7 @@ import {Buff, BuffRange} from "../../Buff";
 class PowerPlant extends Building{
     constructor(){
         super(BuildingNames.PowerPlant,BuildingRarity.Common,BuildingType.Industrial,1.18);
+        this.initBuffs();
     }
 
     initBuffs(){

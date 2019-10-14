@@ -4,6 +4,7 @@ import {Buff, BuffRange} from "../../Buff";
 class PeoplesOil extends Building{
     constructor(){
         super(BuildingNames.PeoplesOil,BuildingRarity.Legendary,BuildingType.Industrial,1);
+        this.initBuffs();
     }
 
     initBuffs(){
