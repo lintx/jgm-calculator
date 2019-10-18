@@ -103,7 +103,7 @@ let quests = [
                     buff:150
                 },{
                     name:BuildingNames.ConvenienceStore,
-                    buff:150
+                    buff:100
                 }
             ]
         ]

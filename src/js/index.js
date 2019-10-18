@@ -41,7 +41,7 @@ import {getValidLevel} from "./Utils";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.22";
+let version = "0.23";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
