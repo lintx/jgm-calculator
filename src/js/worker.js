@@ -29,6 +29,10 @@ import TextileMill from "./Builds/Industrial/TextileMill";
 import PartsFactory from "./Builds/Industrial/PartsFactory";
 import TencentMachinery from "./Builds/Industrial/TencentMachinery";
 import PeoplesOil from "./Builds/Industrial/PeoplesOil";
+import DreamApartment from "./Builds/Residence/DreamApartment";
+import DreamExpress from "./Builds/Business/DreamExpress";
+import SwimmingPool from "./Builds/Business/SwimmingPool";
+import PowerfulCountryCoalIndustry from "./Builds/Industrial/PowerfulCountryCoalIndustry";
 import {BuildingRarity} from "./Building";
 import {getData} from "./Level";
 import {getFlagArrs, getValidLevel, renderSize, toNumber} from "./Utils";
@@ -70,6 +74,7 @@ let buildings = [
     new ChineseSmallBuilding(),
     new SkyVilla(),
     new RevivalMansion(),
+    new DreamApartment(),
     new ConvenienceStore(),
     new School(),
     new ClothingStore(),
@@ -78,8 +83,10 @@ let buildings = [
     new BookCity(),
     new BusinessCenter(),
     new GasStation(),
+    new DreamExpress(),
     new FolkFood(),
     new MediaVoice(),
+    new SwimmingPool(),
     new WoodFactory(),
     new PaperMill(),
     new WaterPlant(),
@@ -89,7 +96,8 @@ let buildings = [
     new TextileMill(),
     new PartsFactory(),
     new TencentMachinery(),
-    new PeoplesOil()
+    new PeoplesOil(),
+    new PowerfulCountryCoalIndustry()
 ];
 
 function initBuildings(list,config) {

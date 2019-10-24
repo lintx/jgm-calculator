@@ -102,6 +102,7 @@ let BuildingNames = {
     ChineseSmallBuilding:"中式小楼",
     SkyVilla:"空中别墅",
     RevivalMansion:"复兴公馆",
+    DreamApartment:"梦想公寓",
 
     ConvenienceStore:"便利店",
     School:"学校",
@@ -111,8 +112,10 @@ let BuildingNames = {
     BookCity:"图书城",
     BusinessCenter:"商贸中心",
     GasStation:"加油站",
+    DreamExpress:"追梦快递",
     FolkFood:"民食斋",
     MediaVoice:"媒体之声",
+    SwimmingPool:"游泳馆",
 
     WoodFactory:"木材厂",
     PaperMill:"造纸厂",
@@ -123,7 +126,8 @@ let BuildingNames = {
     TextileMill:"纺织厂",
     PartsFactory:"零件厂",
     TencentMachinery:"企鹅机械",
-    PeoplesOil:"人民石油"
+    PeoplesOil:"人民石油",
+    PowerfulCountryCoalIndustry:"强国煤业"
 }
 
 export {

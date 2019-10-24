@@ -30,6 +30,10 @@ import TextileMill from "./Builds/Industrial/TextileMill";
 import PartsFactory from "./Builds/Industrial/PartsFactory";
 import TencentMachinery from "./Builds/Industrial/TencentMachinery";
 import PeoplesOil from "./Builds/Industrial/PeoplesOil";
+import DreamApartment from "./Builds/Residence/DreamApartment";
+import DreamExpress from "./Builds/Business/DreamExpress";
+import SwimmingPool from "./Builds/Business/SwimmingPool";
+import PowerfulCountryCoalIndustry from "./Builds/Industrial/PowerfulCountryCoalIndustry";
 import {Buff, BuffRange, Buffs, BuffSource} from "./Buff";
 import BootstrapVue from "bootstrap-vue";
 import PortalVue from 'portal-vue'
@@ -41,7 +45,7 @@ import {getValidLevel} from "./Utils";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.23";
+let version = "0.24";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
@@ -99,7 +103,8 @@ let app = new Vue({
                         new GardenHouse(),
                         new ChineseSmallBuilding(),
                         new SkyVilla(),
-                        new RevivalMansion()
+                        new RevivalMansion(),
+                        new DreamApartment()
                     ]
                 },
                 {
@@ -113,8 +118,10 @@ let app = new Vue({
                         new BookCity(),
                         new BusinessCenter(),
                         new GasStation(),
+                        new DreamExpress(),
                         new FolkFood(),
-                        new MediaVoice()
+                        new MediaVoice(),
+                        new SwimmingPool()
                     ]
                 },
                 {
@@ -129,7 +136,8 @@ let app = new Vue({
                         new TextileMill(),
                         new PartsFactory(),
                         new TencentMachinery(),
-                        new PeoplesOil()
+                        new PeoplesOil(),
+                        new PowerfulCountryCoalIndustry()
                     ]
                 }
             ],

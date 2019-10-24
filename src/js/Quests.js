@@ -8,40 +8,40 @@ let quests = [
             [
                 {
                     name:BuildingNames.ChineseSmallBuilding,
-                    buff:100
+                    buff:150
                 }, {
                     name:BuildingNames.Residential,
-                    buff:100
+                    buff:80
                 }, {
                     name:BuildingNames.Bungalow,
-                    buff:100
+                    buff:80
                 }
             ], [
                 {
                     name:BuildingNames.ChineseSmallBuilding,
-                    buff:100
+                    buff:120
                 }, {
                     name:BuildingNames.GardenHouse,
-                    buff:100
+                    buff:120
                 }, {
                     name:BuildingNames.SteelStructureHouse,
-                    buff:100
+                    buff:60
                 }
             ], [
                 {
                     name:BuildingNames.ChineseSmallBuilding,
-                    buff:100
+                    buff:150
                 }, {
                     name:BuildingNames.SteelStructureHouse,
-                    buff:100
+                    buff:80
                 }, {
                     name:BuildingNames.Residential,
-                    buff:100
+                    buff:80
                 }
             ]
         ]
     }, {
-        name:"反腐风暴",
+        name:"反腐倡廉",
         buffs:[
             [
                 {
@@ -69,11 +69,11 @@ let quests = [
                     name:BuildingNames.BusinessCenter,
                     buff:150
                 },{
-                    name:BuildingNames.VegetableMarket,
-                    buff:150
-                },{
                     name:BuildingNames.ConvenienceStore,
                     buff:100
+                },{
+                    name:BuildingNames.VegetableMarket,
+                    buff:150
                 }
             ],[
                 {
@@ -123,25 +123,25 @@ let quests = [
                 }
             ],[
                 {
-                    name:BuildingNames.FoodFactory,
-                    buff:150
-                },{
                     name:BuildingNames.TextileMill,
                     buff:150
                 },{
                     name:BuildingNames.WoodFactory,
                     buff:100
+                },{
+                    name:BuildingNames.FoodFactory,
+                    buff:150
                 }
             ],[
                 {
                     name:BuildingNames.FoodFactory,
                     buff:150
                 },{
-                    name:BuildingNames.PowerPlant,
-                    buff:150
-                },{
                     name:BuildingNames.WoodFactory,
                     buff:100
+                },{
+                    name:BuildingNames.PowerPlant,
+                    buff:150
                 }
             ],[
                 {
@@ -176,10 +176,10 @@ let quests = [
                     buff:30
                 },{
                     name:BuildingNames.SmallApartment,
-                    buff:150
+                    buff:200
                 },{
                     name:BuildingNames.Chalet,
-                    buff:100
+                    buff:50
                 }
             ],[
                 {
@@ -376,7 +376,7 @@ let quests = [
             ]
         ]
     }, {
-        name:"营商环境2.0",
+        name:"营商环境",
         buffs:[
             [
                 {
@@ -410,16 +410,16 @@ let quests = [
                     name:BuffRange.Supply,
                     buff:20
                 },{
-                    name:BuildingNames.PaperMill,
+                    name:BuildingNames.ConvenienceStore,
                     buff:100
                 },{
-                    name:BuildingNames.ConvenienceStore,
+                    name:BuildingNames.PaperMill,
                     buff:100
                 }
             ]
         ]
     }, {
-        name:"头雁效应",
+        name:"招商引资",
         buffs:[
             [
                 {
@@ -453,16 +453,16 @@ let quests = [
                 }
             ],[
                 {
-                    name:BuildingNames.TencentMachinery,
+                    name:BuildingNames.FolkFood,
                     buff:100
                 },{
-                    name:BuildingNames.FolkFood,
+                    name:BuildingNames.TencentMachinery,
                     buff:200
                 }
             ]
         ]
     }, {
-        name:"就业春风",
+        name:"就业创业",
         buffs:[
             [
                 {
@@ -488,13 +488,13 @@ let quests = [
                 }
             ],[
                 {
+                    name:BuildingNames.ClothingStore,
+                    buff:100
+                },{
                     name:BuildingNames.FoodFactory,
                     buff:200
                 },{
                     name:BuildingNames.WoodFactory,
-                    buff:100
-                },{
-                    name:BuildingNames.ClothingStore,
                     buff:100
                 }
             ],[
@@ -551,18 +551,18 @@ let quests = [
                     name:BuildingNames.SkyVilla,
                     buff:100
                 },{
-                    name:BuildingNames.Chalet,
-                    buff:150
-                },{
                     name:BuildingNames.TalentApartment,
                     buff:100
+                },{
+                    name:BuildingNames.Chalet,
+                    buff:150
                 }
             ],[
                 {
-                    name:BuildingNames.ChineseSmallBuilding,
+                    name:BuildingNames.GardenHouse,
                     buff:150
                 },{
-                    name:BuildingNames.GardenHouse,
+                    name:BuildingNames.ChineseSmallBuilding,
                     buff:150
                 },{
                     name:BuildingNames.SteelStructureHouse,
@@ -691,11 +691,11 @@ let quests = [
                     name:BuildingNames.MediaVoice,
                     buff:100
                 },{
-                    name:BuildingNames.HardwareStore,
-                    buff:200
-                },{
                     name:BuildingNames.VegetableMarket,
                     buff:100
+                },{
+                    name:BuildingNames.HardwareStore,
+                    buff:200
                 }
             ],[
                 {
@@ -710,16 +710,16 @@ let quests = [
                     name:BuildingNames.MediaVoice,
                     buff:100
                 },{
-                    name:BuildingNames.HardwareStore,
-                    buff:100
-                },{
                     name:BuildingNames.ClothingStore,
                     buff:200
+                },{
+                    name:BuildingNames.HardwareStore,
+                    buff:100
                 }
             ]
         ]
     }, {
-        name:"百日安全",
+        name:"交通安全",
         buffs:[
             [
                 {
@@ -747,11 +747,11 @@ let quests = [
                 }
             ],[
                 {
-                    name:BuildingNames.PaperMill,
-                    buff:200
-                },{
                     name:BuildingNames.TextileMill,
                     buff:100
+                },{
+                    name:BuildingNames.PaperMill,
+                    buff:200
                 },{
                     name:BuildingNames.WoodFactory,
                     buff:100
@@ -772,11 +772,11 @@ let quests = [
                     name:BuildingNames.SteelPlant,
                     buff:100
                 },{
-                    name:BuildingNames.WoodFactory,
-                    buff:100
-                },{
                     name:BuildingNames.PaperMill,
                     buff:200
+                },{
+                    name:BuildingNames.WoodFactory,
+                    buff:100
                 }
             ]
         ]
@@ -894,7 +894,7 @@ let quests = [
             ]
         ]
     }, {
-        name:"人造太阳",
+        name:"清洁能源",
         buffs:[
             [
                 {
@@ -1009,7 +1009,7 @@ let quests = [
             ]
         ]
     }, {
-        name:"百人计划",
+        name:"招才引智",
         buffs:[
             [
                 {
@@ -1051,7 +1051,7 @@ let quests = [
             ]
         ]
     }, {
-        name:"扶贫攻坚",
+        name:"脱贫攻坚",
         buffs:[
             [
                 {
@@ -1089,7 +1089,7 @@ let quests = [
             ]
         ]
     }, {
-        name:"文化蓝图",
+        name:"文化产业",
         buffs:[
             [
                 {
@@ -1110,7 +1110,7 @@ let quests = [
             ]
         ]
     }, {
-        name:"护校安园",
+        name:"平安校园",
         buffs:[
             [
                 {
