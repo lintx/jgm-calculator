@@ -22,6 +22,7 @@
                     <a class="nav-item nav-link" href="index.html">计算器</a>
                 </div>
                 <div class="navbar-nav ml-auto">
+                    <a class="nav-item nav-link" href="https://bbs.nga.cn/read.php?tid=19020786&_ff=678" target="_blank">NGA</a>
                     <a class="nav-item nav-link" href="https://github.com/lintx/jgm-calculator" target="_blank">Github</a>
                 </div>
             </b-collapse>
@@ -95,12 +96,12 @@
                         </h5>
 
                         <div class="mb-2">
-                            <div>升级到下一级条件：</div>
+                            <div>任务完成条件：</div>
                             <div>{{quest.needMoney}}金币</div>
                             <div v-if="quest.needContribution>0">{{quest.needContribution}}贡献</div>
                         </div>
                         <div class="mb-2">
-                            <div>奖励：</div>
+                            <div>任务完成奖励：</div>
                             <div v-if="quest.chest2>0">多福红包x{{quest.chest2}}</div>
                             <div v-if="quest.chest3>0">满福红包x{{quest.chest3}}</div>
                             <div v-if="quest.awardPolicy>0">政策点x{{quest.awardPolicy}}</div>
@@ -109,7 +110,7 @@
                         <div>
                             <div>可能的状态：</div>
                             <div v-for="(buffs,index) in quest.buffs">
-                                {{index}}.<span v-for="buff in buffs" :class="{
+                                {{index+1}}.<span v-for="buff in buffs" :class="{
                                 'badge-info':filter.building!=='' && buff.name.indexOf(filter.building)>=0,
                                 'badge-success':filter.buffValue>0 && (filter.buffComparison==='>=' && buff.buff>=filter.buffValue || filter.buffComparison==='=' && buff.buff===filter.buffValue || filter.buffComparison==='<=' && buff.buff<=filter.buffValue)
                                 }" class="mr-1">{{buff.name}}:{{buff.buff}}%</span>

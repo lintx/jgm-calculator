@@ -3,7 +3,7 @@ import questsData from "./AllQuests";
 import BootstrapVue from "bootstrap-vue";
 import PortalVue from "portal-vue";
 
-let version = "0.1";
+let version = "0.2";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
