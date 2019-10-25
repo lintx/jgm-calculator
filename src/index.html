@@ -9,499 +9,516 @@
     <link href="https://cdn.staticfile.org/font-awesome/5.11.2/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <div id="app" class="container">
-        <h1 class="bd-title" id="content">家国梦计算器 <small>v{{version}}</small></h1>
-        <p class="bd-lead">计算家国梦建筑最优摆放策略</p>
-        <p class="bd-lead">
-            <a href="https://bbs.nga.cn/read.php?tid=18759532&_ff=678" target="_blank">NGA帖子</a>
-            <a href="https://github.com/lintx/jgm-calculator" target="_blank">Github地址</a>
-        </p>
+    <div id="app">
+        <nav class="navbar navbar-dark bg-info navbar-expand-md">
+            <div class="container">
+                <span class="navbar-brand mb-0 h1">家国梦工具集</span>
 
-        <b-card no-body class="mb-4">
-            <b-card-header header-tag="header" class="p-1" role="tab">
-                <b-button href="#" variant="link" @click="config.showBuffConfig = !config.showBuffConfig">政策、游记及任务加成配置</b-button>
-            </b-card-header>
-            <b-collapse v-model="config.showBuffConfig">
-                <b-card-body>
-                    <div class="row">
-                        <div class="col-12">
-                            <b-card no-body class="mb-4">
-                                <b-card-header header-tag="header" class="p-1" role="tab">
-                                    <b-button href="#" variant="link" v-b-toggle.collapse_policitys_tips>点击查看提示</b-button>
-                                </b-card-header>
-                                <b-collapse  id="collapse_policitys_tips">
-                                    <b-card-body>
-                                        <ul>
-                                            <li>国庆“分享助力”buff和金钱、供货都没有关系，不要填写。</li>
-                                            <li>查看游记加成：切换到家国之光，点击“中国游记”卡片右上角的星星即可查看。</li>
-                                            <li>城市任务加成可以点击主界面左下角的“城市任务”后查看，也可以在主界面右上角的buff栏查看（buff名和当前阶段城市任务一致）。</li>
-                                        </ul>
-                                    </b-card-body>
-                                </b-collapse>
-                            </b-card>
-                        </div>
+                <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
-                        <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mb-3">
-                            <h5>政策配置</h5>
-                            <div class="input-group input-group-sm mb-3">
-                                <div class="input-group-prepend">
-                                    <label class="input-group-text">当前政策阶段:</label>
-                                </div>
-                                <select @change="switchPolicyStep" v-model.number="policy.step" class="custom-select">
-                                    <option v-for="i in 10" :value="i">第 {{i}} 阶段</option>
-                                </select>
-                            </div>
-                            <div class="input-group input-group-sm mb-3" v-for="level in policy.levels">
-                                <div class="input-group-prepend">
-                                    <label class="input-group-text">{{level.title}} 等级:</label>
-                                </div>
-                                <select v-model.number="level.level" class="custom-select">
-                                    <option v-for="i in 6" :value="i-1">{{i-1}} 级</option>
-                                </select>
-                            </div>
-
-                            <div class="input-group input-group-sm mb-3">
-                                <div class="input-group-prepend">
-                                    <label class="input-group-text">家国之光加成:</label>
-                                </div>
-                                <input @focus="$event.target.select()" v-model.number="config.shineChinaBuff" type="number" class="form-control text-right">
-                                <div class="input-group-append">
-                                    <span class="input-group-text">%</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mb-3">
-                            <h5>政策总加成</h5>
-                            <table class="table table-bordered table-sm">
-                                <thead>
-                                <tr>
-                                    <th class="text-center">加成类型</th>
-                                    <th class="text-center">加成比例</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr v-for="(buff,title) in policyGlobalBuffs">
-                                    <td class="text-center text-nowrap">{{title}}</td>
-                                    <td class="text-left text-nowrap">{{buff}}%</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4" v-for="buffSource in buffs">
-                            <h5>{{buffSource.type}}</h5>
-                            <table class="table table-bordered table-sm">
-                                <thead>
-                                <tr>
-                                    <th class="text-center">加成类型</th>
-                                    <th class="text-center">加成比例</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr v-for="buff in buffSource.list">
-                                    <td class="text-center text-nowrap">{{buff.target}}</td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input @focus="$event.target.select()" v-model.number="buff.buff" type="number" class="form-control text-right">
-                                            <div class="input-group-append">
-                                                <span class="input-group-text">%</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4">
-                            <h5>城市任务加成</h5>
-                            <div v-for="quest in config.questTargetBuff" class="input-group input-group-sm mb-3">
-                                <select v-model.number="quest.building" class="custom-select">
-                                    <option value="">无</option>
-                                    <optgroup label="通用">
-                                        <option v-for="item in questList" :value="item">{{item}}</option>
-                                    </optgroup>
-                                    <optgroup  v-for="types in buildings" :label="types.type">
-                                        <option v-for="item in types.list" :value="item.BuildingName">{{item.BuildingName}}</option>
-                                    </optgroup>
-                                </select>
-                                <input @focus="$event.target.select()" v-model.number="quest.buff" type="number" class="form-control text-right">
-                                <div class="input-group-append">
-                                    <span class="input-group-text">%</span>
-                                </div>
-                                <div class="input-group-append">
-                                    <b-dropdown text="快速填写" right size="sm">
-                                        <b-dropdown-item class="text-right" @click="quest.buff=0">无</b-dropdown-item>
-                                        <b-dropdown-item class="text-right" @click="quest.buff=20">20%</b-dropdown-item>
-                                        <b-dropdown-item class="text-right" @click="quest.buff=30">30%</b-dropdown-item>
-                                        <b-dropdown-item class="text-right" @click="quest.buff=100">100%</b-dropdown-item>
-                                        <b-dropdown-item class="text-right" @click="quest.buff=150">150%</b-dropdown-item>
-                                        <b-dropdown-item class="text-right" @click="quest.buff=200">200%</b-dropdown-item>
-                                    </b-dropdown>
-                                </div>
-                            </div>
-
-                            <div class="input-group input-group-sm mb-3">
-                                <div class="input-group-prepend">
-                                    <label class="input-group-text">快速填写任务加成:</label>
-                                </div>
-                                <select v-model.number="allQuests.selectIndex" class="custom-select">
-                                    <option v-for="(quests,index) in allQuests.data" :value="index">{{quests.name}}</option>
-                                </select>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-6 mb-2" v-for="buffs in allQuests.data[allQuests.selectIndex].buffs">
-                                    <button type="button" @click="selectQuestBuffs(buffs)" class="btn btn-info btn-sm btn-block" v-html="getQuestsBuffText(buffs)"></button>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <button type="button" @click="clearQuestData" class="btn btn-info btn-sm" v-b-tooltip.hover.v-info title="用于完成了一个城市任务时，快速清除上一阶段的城市任务数据">清除任务数据</button>
-                            </div>
-                        </div>
+                <b-collapse id="nav-collapse" is-nav>
+                    <div class="navbar-nav">
+                        <a class="nav-item nav-link" href="quest.html">任务查询</a>
+                        <a class="nav-item nav-link active" href="index.html">计算器</a>
                     </div>
-                </b-card-body>
-            </b-collapse>
-        </b-card>
-
-        <b-card no-body class="mb-4">
-            <b-card-header header-tag="header" class="p-1" role="tab">
-                <b-button href="#" variant="link" @click="config.showBuildingConfig = !config.showBuildingConfig">建筑配置</b-button>
-            </b-card-header>
-            <b-collapse v-model="config.showBuildingConfig">
-                <b-card-body>
-                    <div class="row">
-                        <div class="col-12">
-                            <b-card no-body class="mb-4">
-                                <b-card-header header-tag="header" class="p-1" role="tab">
-                                    <b-button href="#" variant="link" v-b-toggle.collapse_buildings_tips>点击查看提示</b-button>
-                                </b-card-header>
-                                <b-collapse  id="collapse_buildings_tips">
-                                    <b-card-body>
-                                        <ul>
-                                            <li>勾选禁用表示在计算时不计算这个建筑，禁用多个建筑可以显著缩短计算时间。</li>
-                                            <li>填写建筑等级时，按上/下箭头可以+/-1级，按Ctrl+上/下箭头可以+/-10级，按shift+上/下箭头可以+/-100级，按PageUp/PageDown可以+/-1000级。</li>
-                                        </ul>
-                                    </b-card-body>
-                                </b-collapse>
-                            </b-card>
-                        </div>
-
-                        <div v-for="types in buildings" class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4">
-                            <h5>{{types.type}}</h5>
-                            <table class="table table-bordered table-sm">
-                                <thead>
-                                <tr>
-                                    <th class="text-center text-nowrap">名称</th>
-                                    <th class="text-center text-nowrap">已摆</th>
-                                    <th class="text-center text-nowrap">禁用</th>
-                                    <th class="text-center text-nowrap">星级</th>
-                                    <th class="text-center text-nowrap">等级</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr v-for="item in types.list" :class="buildingClass(item)">
-                                    <td class="text-nowrap text-center" v-b-tooltip.hover.html.v-info :title="item.tooltip"><span v-if="item.use" class="calculator-building-use"><i class="fa fa-home"></i></span>{{item.BuildingName}}</td>
-                                    <td class="text-center">
-                                        <input type="checkbox" @click="useBuilding($event,types.type,item)" v-model="item.use"></input>
-                                    </td>
-                                    <td class="text-center">
-                                        <b-form-checkbox v-model="item.disabled"></b-form-checkbox>
-                                    </td>
-                                    <td class="text-center">
-                                        <select v-model.number="item.star" class="custom-select custom-select-sm calculator-star">
-                                            <option value="0">无</option>
-                                            <option value="1">1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4</option>
-                                            <option value="5">5</option>
-                                        </select>
-                                    </td>
-                                    <td class="text-center">
-                                        <input
-                                                @focus="$event.target.select()"
-                                                @keydown="levelKeyDown($event,item)"
-                                                v-model.number="item.level"
-                                                type="number"
-                                                min="1"
-                                                max="2000"
-                                                step="1"
-                                                class="form-control text-right form-control-sm calculator-level"
-                                        >
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="navbar-nav ml-auto">
+                        <a class="nav-item nav-link" href="https://bbs.nga.cn/read.php?tid=18759532&_ff=678" target="_blank">NGA</a>
+                        <a class="nav-item nav-link" href="https://github.com/lintx/jgm-calculator" target="_blank">Github</a>
                     </div>
-                </b-card-body>
-            </b-collapse>
-        </b-card>
+                </b-collapse>
+            </div>
+        </nav>
 
-        <b-card no-body class="mb-4">
-            <b-card-header header-tag="header" class="p-1" role="tab">
-                <b-button href="#" variant="link" @click="config.showOtherConfig = !config.showOtherConfig">其他配置</b-button>
-            </b-card-header>
-            <b-collapse v-model="config.showOtherConfig">
-                <b-card-body>
-                    <div class="row">
-                        <div class="col-12">
-                            <b-card no-body class="mb-4">
-                                <b-card-header header-tag="header" class="p-1" role="tab">
-                                    <b-button href="#" variant="link" v-b-toggle.collapse_configs_tips>点击查看提示</b-button>
-                                </b-card-header>
-                                <b-collapse  id="collapse_configs_tips">
-                                    <b-card-body>
-                                        <ul>
-                                            <li>如果勾选供货计算以每50%为一级则0%-49%供货视为供货buff相同，50%-99%等同理，供货加成在1-49之间时，虽然不能增加红包、相册获取数量，但是能增加蓝币、金币、贡献的数量，所以不建议开启供货计算50%。</li>
-                                            <li>如果勾选供货计算以每50%为一级则0%-49%供货视为供货buff相同，50%-99%等同理，供货加成在1-49之间时，虽然不能增加红包、相册获取数量，但是能增加蓝币、金币、贡献的数量，所以不建议开启供货计算50%。</li>
-                                            <li>升级推荐方案说明:
-                                                <ul>
-                                                    <li>按总升级次数:先计算出各最优方案，然后计算方案中建筑总共升级指定次数后最优建筑等级</li>
-                                                    <li>按剩余金币:先计算出各最优方案，然后计算该方案使用指定金币升级建筑的最优建筑等级</li>
-                                                    <li>按目标秒收入:先计算出各最优方案，然后计算该方案达到目标秒收入时的最优建筑等级，建议目标秒收入和当前秒收入不要差距太大</li>
-                                                    <li>按目标秒收入费用最少:在计算方案过程中即计算升级到目标秒收入时的最优建筑等级和需要消耗的金币，使用该方案将只返回“在线金币优先”一种策略结果，该方案会大量增加运算量，需要的时间大幅增长，建议目标秒收入和当前秒收入不要差距太大</li>
-                                                </ul>
-                                                除“按总升级次数”外，数值填写游戏中的金币数量/秒收入数量，如“100ee”
-                                            </li>
-                                            <li>
-                                                关于计算量：
-                                                不管使用什么策略，
-                                                计算过程中均为先求出所有的组合（30种建筑全部计算时总共有1728000种组合，
-                                                单种类建筑的组合可能性为(x*(x-1)*(x-2))/(3*(3-1)*(3-2))，
-                                                也就是(x*(x-1)*(x-2))/6，10种建筑全选时组合数量为120，
-                                                然后把3种建筑的组合可能性相乘即为全部可能的组合即120*120*120=1728000），
-                                                然后求出每种每种组合的相关数据（先应用组合建筑间的加成，然后求出在线收益、离线收益、供货加成等数据），
-                                                计算过程中记录各种数据最好的组合，
-                                                所以最终结果的策略数量多少不会影响计算速度，
-                                                影响计算速度的最关键数据是计算过程中使用的建筑数量（如果每种建筑禁用一种，那么总的组合数量为592704，计算时间大约只有全建筑的1/3了，禁用数据越多，计算速度越快），
-                                                其中，如果升级推荐方案选择“按目标秒收入费用最少”，
-                                                则计算量还会受到目标收入和当前收入之间收入差的影响，
-                                                因为这种计算方案在计算每一种可能性时，
-                                                都需要一次次的模拟建筑升级，
-                                                收入差则需要模拟建筑升级的次数越多，则计算时间越长。
-                                            </li>
-                                        </ul>
-                                    </b-card-body>
-                                </b-collapse>
-                            </b-card>
-                        </div>
+        <div class="container">
+            <h1 class="bd-title" id="content">家国梦计算器 <small>v{{version}}</small></h1>
+            <p class="bd-lead">计算家国梦建筑最优摆放策略</p>
 
-                        <div class="col-12">
-                            <div class="form-check mb-3">
-                                <input v-model="config.supplyStep50" class="form-check-input" type="checkbox" value="" id="supplyStep50">
-                                <label class="form-check-label" for="supplyStep50">
-                                    供货计算以每50%为一级
-                                </label>
+            <b-card no-body class="mb-4">
+                <b-card-header header-tag="header" class="p-1" role="tab">
+                    <b-button href="#" variant="link" @click="config.showBuffConfig = !config.showBuffConfig">政策、游记及任务加成配置</b-button>
+                </b-card-header>
+                <b-collapse v-model="config.showBuffConfig">
+                    <b-card-body>
+                        <div class="row">
+                            <div class="col-12">
+                                <b-card no-body class="mb-4">
+                                    <b-card-header header-tag="header" class="p-1" role="tab">
+                                        <b-button href="#" variant="link" v-b-toggle.collapse_policitys_tips>点击查看提示</b-button>
+                                    </b-card-header>
+                                    <b-collapse  id="collapse_policitys_tips">
+                                        <b-card-body>
+                                            <ul>
+                                                <li>国庆“分享助力”buff和金钱、供货都没有关系，不要填写。</li>
+                                                <li>查看游记加成：切换到家国之光，点击“中国游记”卡片右上角的星星即可查看。</li>
+                                                <li>城市任务加成可以点击主界面左下角的“城市任务”后查看，也可以在主界面右上角的buff栏查看（buff名和当前阶段城市任务一致）。</li>
+                                            </ul>
+                                        </b-card-body>
+                                    </b-collapse>
+                                </b-card>
                             </div>
 
-                            <div class="input-group input-group-sm mb-3">
-                                <div class="input-group-prepend">
-                                    <div class="input-group-text">
-                                        <input v-model.number="config.allBuildingLevel1" type="checkbox" value="" id="allBuildingLevel1">
-                                        <label class="form-check-label form-check-label-sm" for="allBuildingLevel1">
-                                            全部建筑按特定等级计算收益
-                                        </label>
+                            <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mb-3">
+                                <h5>政策配置</h5>
+                                <div class="input-group input-group-sm mb-3">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">当前政策阶段:</label>
+                                    </div>
+                                    <select @change="switchPolicyStep" v-model.number="policy.step" class="custom-select">
+                                        <option v-for="i in 10" :value="i">第 {{i}} 阶段</option>
+                                    </select>
+                                </div>
+                                <div class="input-group input-group-sm mb-3" v-for="level in policy.levels">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">{{level.title}} 等级:</label>
+                                    </div>
+                                    <select v-model.number="level.level" class="custom-select">
+                                        <option v-for="i in 6" :value="i-1">{{i-1}} 级</option>
+                                    </select>
+                                </div>
+
+                                <div class="input-group input-group-sm mb-3">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">家国之光加成:</label>
+                                    </div>
+                                    <input @focus="$event.target.select()" v-model.number="config.shineChinaBuff" type="number" class="form-control text-right">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">%</span>
                                     </div>
                                 </div>
-                                <input @focus="$event.target.select()" v-model="config.allBuildingLevel" type="text" class="form-control text-right" placeholder="等级">
-                                <div class="input-group-append">
-                                    <span class="input-group-text">级</span>
-                                </div>
                             </div>
 
-                            <div class="input-group input-group-sm">
-                                <div class="input-group-prepend">
-                                    <label class="input-group-text">升级推荐方案:</label>
-                                </div>
-                                <select v-model.number="config.upgradeRecommend.mode" class="custom-select">
-                                    <option value="1">按总升级次数</option>
-                                    <option value="2">按剩余金币</option>
-                                    <option value="3">按目标秒收入</option>
-                                    <option value="4">按目标秒收入费用最少</option>
-                                </select>
-                                <input @focus="$event.target.select()" v-model="config.upgradeRecommend.value" type="text" class="form-control text-right" placeholder="次数/金币/秒收入">
-                                <div class="input-group-append">
-                                    <span class="input-group-text">次/金/秒收入</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </b-card-body>
-            </b-collapse>
-        </b-card>
-
-        <div no-body class="mb-4 card">
-            <header header-tag="header" class="card-header" role="tab">操作</header>
-            <div class="collapse show">
-                <div class="card-body">
-                    <h5>建筑禁用方案操作&nbsp;&nbsp;<small>方案保存仅临时保存，如需刷新页面还能使用，需要保存本地配置</small></h5>
-                    <div class="row">
-                        <div class="mb-3 col-12 col-sm-6 col-md-6 col-lg-6 col-xl-3" v-if="buildingProgram.current>-1 && buildingProgram.programs.length>0">
-                            <div class="input-group input-group-sm">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text">方案名</span>
-                                </div>
-                                <input type="text" class="form-control" v-model="buildingProgram.programs[buildingProgram.current].title" placeholder="方案名">
-                            </div>
-                        </div>
-
-                        <div class="mb-3 col-12 col-sm-6 col-md-6 col-lg-6 col-xl-3" v-if="buildingProgram.programs.length>1">
-                            <div class="input-group input-group-sm">
-                                <div class="input-group-prepend">
-                                    <label class="input-group-text">切换方案:</label>
-                                </div>
-                                <select @change="switchBuildingProgram" v-model.number="buildingProgram.current" class="custom-select">
-                                    <option v-for="(c,i) in buildingProgram.programs" :value="i">{{c.title===""?("方案 " + i):c.title}}</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6">
-                            <button type="button" @click="buildingProgramSave" class="mb-3 btn btn-success btn-sm" v-b-tooltip.hover.v-info title="将当前禁用的建筑保存到方案列表中">保存</button>
-                            <button type="button" @click="buildingProgramSaveTo" class="mb-3 btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="将当前禁用的建筑另存为新的方案" v-if="buildingProgram.current>-1 && buildingProgram.programs.length>0">另存</button>
-                            <button type="button" @click="buildingProgramRemove" class="mb-3 btn btn-danger btn-sm" v-b-tooltip.hover.v-info title="删除当前方案" v-if="buildingProgram.current>-1 && buildingProgram.programs.length>0">删除</button>
-                            <button type="button" @click="buildingProgramClear" class="mb-3 btn btn-danger btn-sm" v-b-tooltip.hover.v-info title="清除所有方案" v-if="buildingProgram.current>-1 && buildingProgram.programs.length>0">清除</button>
-                        </div>
-                    </div>
-
-                    <h5>本地配置操作</h5>
-                    <div class="row">
-                        <div class="mb-3 col-12 col-sm-6 col-md-6 col-lg-6 col-xl-3">
-                            <div class="input-group input-group-sm">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text">配置名</span>
-                                </div>
-                                <input type="text" class="form-control" v-model="config.configName" placeholder="配置名">
-                            </div>
-                        </div>
-
-                        <div class="mb-3 col-12 col-sm-6 col-md-6 col-lg-6 col-xl-3" v-if="localConfigList.length>1">
-                            <div class="input-group input-group-sm">
-                                <div class="input-group-prepend">
-                                    <label class="input-group-text">切换配置:</label>
-                                </div>
-                                <select @change="switchConfig" v-model.number="selectConfigIndex" class="custom-select">
-                                    <option v-for="(c,i) in localConfigList" :value="i">{{c}}</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6">
-                            <button type="button" @click="saveConfig" class="mb-3 btn btn-success btn-sm" v-b-tooltip.hover.v-info title="将配置保存到浏览器缓存">保存</button>
-                            <button type="button" @click="addConfig" class="mb-3 btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="新增一个空的本地存档" v-if="localConfigList.length>0">新增</button>
-                            <button type="button" @click="copyConfig" class="mb-3 btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="把当前存档复制一份" v-if="localConfigList.length>0">复制</button>
-                            <button type="button" @click="exportConfig" class="mb-3 btn btn-info btn-sm" v-b-tooltip.hover.v-info title="导出所有本地存档数据（JSON格式）" v-if="localConfigList.length>0">导出</button>
-                            <button type="button" @click="importConfig" class="mb-3 btn btn-info btn-sm" v-b-tooltip.hover.v-info title="导入数据存档到本地（合并导入）">导入</button>
-                            <button type="button" @click="removeConfig" class="mb-3 btn btn-danger btn-sm" v-b-tooltip.hover.v-info title="删除选中的存档" v-if="localConfigList.length>0">删除</button>
-                            <button type="button" @click="clearConfig" class="mb-3 btn btn-danger btn-sm" v-b-tooltip.hover.v-info title="清除所有本地存档" v-if="localConfigList.length>0">清除</button>
-                        </div>
-                    </div>
-
-                    <div>
-                        <button type="button" @click="calculation" :disabled="calculationIng" :class="{disabled:calculationIng}" class="btn btn-success btn-lg">{{calculationIng?"计算中...":"开始计算"}}</button>
-                        <button type="button" @click="stop" v-if="calculationIng" class="btn btn-danger">停止计算</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div no-body class="mb-4 card">
-            <header header-tag="header" class="card-header" role="tab">结果</header>
-            <div class="collapse show">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-12 mb-4">
-                            <b-card no-body>
-                                <b-card-header header-tag="header" class="p-1" role="tab">
-                                    <b-button href="#" variant="link" v-b-toggle.collapse_programs_tips>点击查看提示</b-button>
-                                </b-card-header>
-                                <b-collapse  id="collapse_programs_tips">
-                                    <b-card-body>
-                                        <ul>
-                                            <li>
-                                                如果推荐升级策略选的是两种按目标秒收入策略之一，
-                                                目标秒收入比当前秒收入高，
-                                                那么计算结果中还会显示升级到目标秒收入的预计时间，
-                                                你会发现显示的有2个时间，其中，前面的时间是按最优升级策略，
-                                                一旦金币足够就立即升级对应建筑（升级策略选“按升级次数”，升级次数填1时计算出来推荐升级的那个建筑）这种操作模式下需要的时间（即最小时间）
-                                                后面的时间是保持当前的收入速度，一直累计到升级到目标秒收入需要的金币后一次性将建筑升级到目标等级需要的时间。
-                                                <p>注：计算需要的时间时，无法考虑小火车拉货增加的金币、开红包增加的金币、开相册增加的金币等数据。</p>
-                                            </li>
-                                            <li>如果部分数据和实际数据有微小差别（如1%-2%左右），可能是因为精度问题（原始数据在高等级时均为科学计数法表示损失了部分精度，或者计算结果的四舍五入），如果偏差较大，请先确定配置中的数据和游戏中的一致，如果一致，可以在游戏中随意更换一个建筑再换回来看看游戏内数据有没有变更，如果变了可能是你碰到游戏bug了（这个bug很多人碰到了）</li>
-                                        </ul>
-                                    </b-card-body>
-                                </b-collapse>
-                            </b-card>
-                        </div>
-
-                        <div class="col-12" v-if="calculationIng">
-                            <div class="alert alert-info" role="alert">
-                                <h4 class="alert-heading">正在计算，请稍候...</h4>
-                                <p>已用时间:{{progress.useTime}},预计剩余时间:{{progress.needTime}}</p>
-                                <div class="progress">
-                                    <div class="progress-bar progress-bar-striped bg-info progress-bar-animated" role="progressbar" :style="{ width:  progress.progress + '%' }">{{progress.progress}}%</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-12" v-if="!calculationIng && programs.length===0">
-                            <div class="alert alert-info" role="alert">
-                                <h4 class="alert-heading">点击上面的“开始计算”并等待计算完毕后查看</h4>
-                            </div>
-                        </div>
-
-                        <div class="col-12" v-if="programs.length>0">
-                            <div class="alert alert-info mb-0" role="alert">
-                                <div>计算完成<span v-if="workerUseTime!=='-'">，本次计算总耗时：{{workerUseTime}}</span></div>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4 mt-4" v-for="program in programs">
-                            <div class="card border-info">
-                                <table class="table table-sm mb-0">
+                            <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 mb-3">
+                                <h5>政策总加成</h5>
+                                <table class="table table-bordered table-sm">
                                     <thead>
                                     <tr>
-                                        <th class="text-center">在线</th>
-                                        <th class="text-center" colspan="3">{{program.addition.online}}/秒</th>
-                                    </tr>
-                                    <tr>
-                                        <th class="text-center">离线</th>
-                                        <th class="text-center" colspan="3">{{program.addition.offline}}/秒</th>
-                                    </tr>
-                                    <tr>
-                                        <th class="text-center">供货</th>
-                                        <th class="text-center" colspan="3">{{program.addition.supply}}%</th>
-                                    </tr>
-                                    <tr>
-                                        <th class="text-center">建筑</th>
-                                        <th class="text-center">在线</th>
-                                        <th class="text-center">离线</th>
-                                        <th class="text-center">目标</th>
+                                        <th class="text-center">加成类型</th>
+                                        <th class="text-center">加成比例</th>
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <tr v-for="building in program.addition.buildings" :class="buildingClass(building.building)">
-                                        <td class="text-nowrap text-center" v-b-tooltip.hover.html.v-info :title="building.building.tooltip"><span v-if="building.building.use" class="calculator-building-use"><i class="fa fa-home"></i></span>{{building.building.BuildingName}}</td>
-                                        <td class="text-center" v-b-tooltip.hover.html.v-info :title="building.onlineTooltip">{{building.online}}/秒</td>
-                                        <td class="text-center" v-b-tooltip.hover.html.v-info :title="building.offlineTooltip">{{building.offline}}/秒</td>
-                                        <td class="text-center" v-b-tooltip.hover.html.v-info :title="building.tooltip">{{building.toLevel}}</td>
+                                    <tr v-for="(buff,title) in policyGlobalBuffs">
+                                        <td class="text-center text-nowrap">{{title}}</td>
+                                        <td class="text-left text-nowrap">{{buff}}%</td>
                                     </tr>
                                     </tbody>
                                 </table>
-                                <div class="card-body">
-                                    <h5 class="card-title">{{program.title.join("；")}}</h5>
-                                    <p class="card-text" v-if="program.addition.useMoney!==0">
-                                        <span>该组合和当前buff下，将所有建筑升级到目标等级后，总在线收入将达到{{program.addition.toTps}}/秒，总共需要花费金币{{program.addition.useMoney}}</span>
-                                        <span v-if="program.addition.needTime!==0">，升级到目标收入预计需要{{program.addition.needTime}}至{{program.addition.maxNeedTime}}的时间</span>
-                                    </p>
-                                    <div>
-                                        <button type="button" @click="selectProgram(program.addition.buildings)" class="btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="将本方案的建筑之外的所有建筑禁用">应用方案</button>
-                                        <button type="button" @click="syncProgramLevel(program.addition.buildings)" class="btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="将本方案的推荐等级同步到设置中" v-if="program.addition.useMoney!==0">同步等级</button>
-                                        <button type="button" @click="showRoute(program.addition.route)" class="btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="查看推荐升级方案路线" v-if="program.addition.route.length>0">升级路线</button>
+                            </div>
+
+                            <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4" v-for="buffSource in buffs">
+                                <h5>{{buffSource.type}}</h5>
+                                <table class="table table-bordered table-sm">
+                                    <thead>
+                                    <tr>
+                                        <th class="text-center">加成类型</th>
+                                        <th class="text-center">加成比例</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr v-for="buff in buffSource.list">
+                                        <td class="text-center text-nowrap">{{buff.target}}</td>
+                                        <td>
+                                            <div class="input-group input-group-sm">
+                                                <input @focus="$event.target.select()" v-model.number="buff.buff" type="number" class="form-control text-right">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">%</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4">
+                                <h5>城市任务加成</h5>
+                                <div v-for="quest in config.questTargetBuff" class="input-group input-group-sm mb-3">
+                                    <select v-model.number="quest.building" class="custom-select">
+                                        <option value="">无</option>
+                                        <optgroup label="通用">
+                                            <option v-for="item in questList" :value="item">{{item}}</option>
+                                        </optgroup>
+                                        <optgroup  v-for="types in buildings" :label="types.type">
+                                            <option v-for="item in types.list" :value="item.BuildingName">{{item.BuildingName}}</option>
+                                        </optgroup>
+                                    </select>
+                                    <input @focus="$event.target.select()" v-model.number="quest.buff" type="number" class="form-control text-right">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    <div class="input-group-append">
+                                        <b-dropdown text="快速填写" right size="sm">
+                                            <b-dropdown-item class="text-right" @click="quest.buff=0">无</b-dropdown-item>
+                                            <b-dropdown-item class="text-right" @click="quest.buff=20">20%</b-dropdown-item>
+                                            <b-dropdown-item class="text-right" @click="quest.buff=30">30%</b-dropdown-item>
+                                            <b-dropdown-item class="text-right" @click="quest.buff=100">100%</b-dropdown-item>
+                                            <b-dropdown-item class="text-right" @click="quest.buff=150">150%</b-dropdown-item>
+                                            <b-dropdown-item class="text-right" @click="quest.buff=200">200%</b-dropdown-item>
+                                        </b-dropdown>
+                                    </div>
+                                </div>
+
+                                <div class="input-group input-group-sm mb-3">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">快速填写任务加成:</label>
+                                    </div>
+                                    <select v-model.number="allQuests.selectIndex" class="custom-select">
+                                        <option v-for="(quests,index) in allQuests.data" :value="index">{{quests.name}}</option>
+                                    </select>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-6 mb-2" v-for="buffs in allQuests.data[allQuests.selectIndex].buffs">
+                                        <button type="button" @click="selectQuestBuffs(buffs)" class="btn btn-info btn-sm btn-block" v-html="getQuestsBuffText(buffs)"></button>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <button type="button" @click="clearQuestData" class="btn btn-info btn-sm" v-b-tooltip.hover.v-info title="用于完成了一个城市任务时，快速清除上一阶段的城市任务数据">清除任务数据</button>
+                                </div>
+                            </div>
+                        </div>
+                    </b-card-body>
+                </b-collapse>
+            </b-card>
+
+            <b-card no-body class="mb-4">
+                <b-card-header header-tag="header" class="p-1" role="tab">
+                    <b-button href="#" variant="link" @click="config.showBuildingConfig = !config.showBuildingConfig">建筑配置</b-button>
+                </b-card-header>
+                <b-collapse v-model="config.showBuildingConfig">
+                    <b-card-body>
+                        <div class="row">
+                            <div class="col-12">
+                                <b-card no-body class="mb-4">
+                                    <b-card-header header-tag="header" class="p-1" role="tab">
+                                        <b-button href="#" variant="link" v-b-toggle.collapse_buildings_tips>点击查看提示</b-button>
+                                    </b-card-header>
+                                    <b-collapse  id="collapse_buildings_tips">
+                                        <b-card-body>
+                                            <ul>
+                                                <li>勾选禁用表示在计算时不计算这个建筑，禁用多个建筑可以显著缩短计算时间。</li>
+                                                <li>填写建筑等级时，按上/下箭头可以+/-1级，按Ctrl+上/下箭头可以+/-10级，按shift+上/下箭头可以+/-100级，按PageUp/PageDown可以+/-1000级。</li>
+                                            </ul>
+                                        </b-card-body>
+                                    </b-collapse>
+                                </b-card>
+                            </div>
+
+                            <div v-for="types in buildings" class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4">
+                                <h5>{{types.type}}</h5>
+                                <table class="table table-bordered table-sm">
+                                    <thead>
+                                    <tr>
+                                        <th class="text-center text-nowrap">名称</th>
+                                        <th class="text-center text-nowrap">已摆</th>
+                                        <th class="text-center text-nowrap">禁用</th>
+                                        <th class="text-center text-nowrap">星级</th>
+                                        <th class="text-center text-nowrap">等级</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr v-for="item in types.list" :class="buildingClass(item)">
+                                        <td class="text-nowrap text-center" v-b-tooltip.hover.html.v-info :title="item.tooltip"><span v-if="item.use" class="calculator-building-use"><i class="fa fa-home"></i></span>{{item.BuildingName}}</td>
+                                        <td class="text-center">
+                                            <input type="checkbox" @click="useBuilding($event,types.type,item)" v-model="item.use"></input>
+                                        </td>
+                                        <td class="text-center">
+                                            <b-form-checkbox v-model="item.disabled"></b-form-checkbox>
+                                        </td>
+                                        <td class="text-center">
+                                            <select v-model.number="item.star" class="custom-select custom-select-sm calculator-star">
+                                                <option value="0">无</option>
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                                <option value="4">4</option>
+                                                <option value="5">5</option>
+                                            </select>
+                                        </td>
+                                        <td class="text-center">
+                                            <input
+                                                    @focus="$event.target.select()"
+                                                    @keydown="levelKeyDown($event,item)"
+                                                    v-model.number="item.level"
+                                                    type="number"
+                                                    min="1"
+                                                    max="2000"
+                                                    step="1"
+                                                    class="form-control text-right form-control-sm calculator-level"
+                                            >
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </b-card-body>
+                </b-collapse>
+            </b-card>
+
+            <b-card no-body class="mb-4">
+                <b-card-header header-tag="header" class="p-1" role="tab">
+                    <b-button href="#" variant="link" @click="config.showOtherConfig = !config.showOtherConfig">其他配置</b-button>
+                </b-card-header>
+                <b-collapse v-model="config.showOtherConfig">
+                    <b-card-body>
+                        <div class="row">
+                            <div class="col-12">
+                                <b-card no-body class="mb-4">
+                                    <b-card-header header-tag="header" class="p-1" role="tab">
+                                        <b-button href="#" variant="link" v-b-toggle.collapse_configs_tips>点击查看提示</b-button>
+                                    </b-card-header>
+                                    <b-collapse  id="collapse_configs_tips">
+                                        <b-card-body>
+                                            <ul>
+                                                <li>如果勾选供货计算以每50%为一级则0%-49%供货视为供货buff相同，50%-99%等同理，供货加成在1-49之间时，虽然不能增加红包、相册获取数量，但是能增加蓝币、金币、贡献的数量，所以不建议开启供货计算50%。</li>
+                                                <li>如果勾选供货计算以每50%为一级则0%-49%供货视为供货buff相同，50%-99%等同理，供货加成在1-49之间时，虽然不能增加红包、相册获取数量，但是能增加蓝币、金币、贡献的数量，所以不建议开启供货计算50%。</li>
+                                                <li>升级推荐方案说明:
+                                                    <ul>
+                                                        <li>按总升级次数:先计算出各最优方案，然后计算方案中建筑总共升级指定次数后最优建筑等级</li>
+                                                        <li>按剩余金币:先计算出各最优方案，然后计算该方案使用指定金币升级建筑的最优建筑等级</li>
+                                                        <li>按目标秒收入:先计算出各最优方案，然后计算该方案达到目标秒收入时的最优建筑等级，建议目标秒收入和当前秒收入不要差距太大</li>
+                                                        <li>按目标秒收入费用最少:在计算方案过程中即计算升级到目标秒收入时的最优建筑等级和需要消耗的金币，使用该方案将只返回“在线金币优先”一种策略结果，该方案会大量增加运算量，需要的时间大幅增长，建议目标秒收入和当前秒收入不要差距太大</li>
+                                                    </ul>
+                                                    除“按总升级次数”外，数值填写游戏中的金币数量/秒收入数量，如“100ee”
+                                                </li>
+                                                <li>
+                                                    关于计算量：
+                                                    不管使用什么策略，
+                                                    计算过程中均为先求出所有的组合（30种建筑全部计算时总共有1728000种组合，
+                                                    单种类建筑的组合可能性为(x*(x-1)*(x-2))/(3*(3-1)*(3-2))，
+                                                    也就是(x*(x-1)*(x-2))/6，10种建筑全选时组合数量为120，
+                                                    然后把3种建筑的组合可能性相乘即为全部可能的组合即120*120*120=1728000），
+                                                    然后求出每种每种组合的相关数据（先应用组合建筑间的加成，然后求出在线收益、离线收益、供货加成等数据），
+                                                    计算过程中记录各种数据最好的组合，
+                                                    所以最终结果的策略数量多少不会影响计算速度，
+                                                    影响计算速度的最关键数据是计算过程中使用的建筑数量（如果每种建筑禁用一种，那么总的组合数量为592704，计算时间大约只有全建筑的1/3了，禁用数据越多，计算速度越快），
+                                                    其中，如果升级推荐方案选择“按目标秒收入费用最少”，
+                                                    则计算量还会受到目标收入和当前收入之间收入差的影响，
+                                                    因为这种计算方案在计算每一种可能性时，
+                                                    都需要一次次的模拟建筑升级，
+                                                    收入差则需要模拟建筑升级的次数越多，则计算时间越长。
+                                                </li>
+                                            </ul>
+                                        </b-card-body>
+                                    </b-collapse>
+                                </b-card>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-check mb-3">
+                                    <input v-model="config.supplyStep50" class="form-check-input" type="checkbox" value="" id="supplyStep50">
+                                    <label class="form-check-label" for="supplyStep50">
+                                        供货计算以每50%为一级
+                                    </label>
+                                </div>
+
+                                <div class="input-group input-group-sm mb-3">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text">
+                                            <input v-model.number="config.allBuildingLevel1" type="checkbox" value="" id="allBuildingLevel1">
+                                            <label class="form-check-label form-check-label-sm" for="allBuildingLevel1">
+                                                全部建筑按特定等级计算收益
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <input @focus="$event.target.select()" v-model="config.allBuildingLevel" type="text" class="form-control text-right" placeholder="等级">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">级</span>
+                                    </div>
+                                </div>
+
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">升级推荐方案:</label>
+                                    </div>
+                                    <select v-model.number="config.upgradeRecommend.mode" class="custom-select">
+                                        <option value="1">按总升级次数</option>
+                                        <option value="2">按剩余金币</option>
+                                        <option value="3">按目标秒收入</option>
+                                        <option value="4">按目标秒收入费用最少</option>
+                                    </select>
+                                    <input @focus="$event.target.select()" v-model="config.upgradeRecommend.value" type="text" class="form-control text-right" placeholder="次数/金币/秒收入">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">次/金/秒收入</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </b-card-body>
+                </b-collapse>
+            </b-card>
+
+            <div no-body class="mb-4 card">
+                <header header-tag="header" class="card-header" role="tab">操作</header>
+                <div class="collapse show">
+                    <div class="card-body">
+                        <h5>建筑禁用方案操作&nbsp;&nbsp;<small>方案保存仅临时保存，如需刷新页面还能使用，需要保存本地配置</small></h5>
+                        <div class="row">
+                            <div class="mb-3 col-12 col-sm-6 col-md-6 col-lg-6 col-xl-3" v-if="buildingProgram.current>-1 && buildingProgram.programs.length>0">
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">方案名</span>
+                                    </div>
+                                    <input type="text" class="form-control" v-model="buildingProgram.programs[buildingProgram.current].title" placeholder="方案名">
+                                </div>
+                            </div>
+
+                            <div class="mb-3 col-12 col-sm-6 col-md-6 col-lg-6 col-xl-3" v-if="buildingProgram.programs.length>1">
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">切换方案:</label>
+                                    </div>
+                                    <select @change="switchBuildingProgram" v-model.number="buildingProgram.current" class="custom-select">
+                                        <option v-for="(c,i) in buildingProgram.programs" :value="i">{{c.title===""?("方案 " + i):c.title}}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6">
+                                <button type="button" @click="buildingProgramSave" class="mb-3 btn btn-success btn-sm" v-b-tooltip.hover.v-info title="将当前禁用的建筑保存到方案列表中">保存</button>
+                                <button type="button" @click="buildingProgramSaveTo" class="mb-3 btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="将当前禁用的建筑另存为新的方案" v-if="buildingProgram.current>-1 && buildingProgram.programs.length>0">另存</button>
+                                <button type="button" @click="buildingProgramRemove" class="mb-3 btn btn-danger btn-sm" v-b-tooltip.hover.v-info title="删除当前方案" v-if="buildingProgram.current>-1 && buildingProgram.programs.length>0">删除</button>
+                                <button type="button" @click="buildingProgramClear" class="mb-3 btn btn-danger btn-sm" v-b-tooltip.hover.v-info title="清除所有方案" v-if="buildingProgram.current>-1 && buildingProgram.programs.length>0">清除</button>
+                            </div>
+                        </div>
+
+                        <h5>本地配置操作</h5>
+                        <div class="row">
+                            <div class="mb-3 col-12 col-sm-6 col-md-6 col-lg-6 col-xl-3">
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">配置名</span>
+                                    </div>
+                                    <input type="text" class="form-control" v-model="config.configName" placeholder="配置名">
+                                </div>
+                            </div>
+
+                            <div class="mb-3 col-12 col-sm-6 col-md-6 col-lg-6 col-xl-3" v-if="localConfigList.length>1">
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text">切换配置:</label>
+                                    </div>
+                                    <select @change="switchConfig" v-model.number="selectConfigIndex" class="custom-select">
+                                        <option v-for="(c,i) in localConfigList" :value="i">{{c}}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6">
+                                <button type="button" @click="saveConfig" class="mb-3 btn btn-success btn-sm" v-b-tooltip.hover.v-info title="将配置保存到浏览器缓存">保存</button>
+                                <button type="button" @click="addConfig" class="mb-3 btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="新增一个空的本地存档" v-if="localConfigList.length>0">新增</button>
+                                <button type="button" @click="copyConfig" class="mb-3 btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="把当前存档复制一份" v-if="localConfigList.length>0">复制</button>
+                                <button type="button" @click="exportConfig" class="mb-3 btn btn-info btn-sm" v-b-tooltip.hover.v-info title="导出所有本地存档数据（JSON格式）" v-if="localConfigList.length>0">导出</button>
+                                <button type="button" @click="importConfig" class="mb-3 btn btn-info btn-sm" v-b-tooltip.hover.v-info title="导入数据存档到本地（合并导入）">导入</button>
+                                <button type="button" @click="removeConfig" class="mb-3 btn btn-danger btn-sm" v-b-tooltip.hover.v-info title="删除选中的存档" v-if="localConfigList.length>0">删除</button>
+                                <button type="button" @click="clearConfig" class="mb-3 btn btn-danger btn-sm" v-b-tooltip.hover.v-info title="清除所有本地存档" v-if="localConfigList.length>0">清除</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <button type="button" @click="calculation" :disabled="calculationIng" :class="{disabled:calculationIng}" class="btn btn-success btn-lg">{{calculationIng?"计算中...":"开始计算"}}</button>
+                            <button type="button" @click="stop" v-if="calculationIng" class="btn btn-danger">停止计算</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div no-body class="mb-4 card">
+                <header header-tag="header" class="card-header" role="tab">结果</header>
+                <div class="collapse show">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 mb-4">
+                                <b-card no-body>
+                                    <b-card-header header-tag="header" class="p-1" role="tab">
+                                        <b-button href="#" variant="link" v-b-toggle.collapse_programs_tips>点击查看提示</b-button>
+                                    </b-card-header>
+                                    <b-collapse  id="collapse_programs_tips">
+                                        <b-card-body>
+                                            <ul>
+                                                <li>
+                                                    如果推荐升级策略选的是两种按目标秒收入策略之一，
+                                                    目标秒收入比当前秒收入高，
+                                                    那么计算结果中还会显示升级到目标秒收入的预计时间，
+                                                    你会发现显示的有2个时间，其中，前面的时间是按最优升级策略，
+                                                    一旦金币足够就立即升级对应建筑（升级策略选“按升级次数”，升级次数填1时计算出来推荐升级的那个建筑）这种操作模式下需要的时间（即最小时间）
+                                                    后面的时间是保持当前的收入速度，一直累计到升级到目标秒收入需要的金币后一次性将建筑升级到目标等级需要的时间。
+                                                    <p>注：计算需要的时间时，无法考虑小火车拉货增加的金币、开红包增加的金币、开相册增加的金币等数据。</p>
+                                                </li>
+                                                <li>如果部分数据和实际数据有微小差别（如1%-2%左右），可能是因为精度问题（原始数据在高等级时均为科学计数法表示损失了部分精度，或者计算结果的四舍五入），如果偏差较大，请先确定配置中的数据和游戏中的一致，如果一致，可以在游戏中随意更换一个建筑再换回来看看游戏内数据有没有变更，如果变了可能是你碰到游戏bug了（这个bug很多人碰到了）</li>
+                                            </ul>
+                                        </b-card-body>
+                                    </b-collapse>
+                                </b-card>
+                            </div>
+
+                            <div class="col-12" v-if="calculationIng">
+                                <div class="alert alert-info" role="alert">
+                                    <h4 class="alert-heading">正在计算，请稍候...</h4>
+                                    <p>已用时间:{{progress.useTime}},预计剩余时间:{{progress.needTime}}</p>
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-striped bg-info progress-bar-animated" role="progressbar" :style="{ width:  progress.progress + '%' }">{{progress.progress}}%</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12" v-if="!calculationIng && programs.length===0">
+                                <div class="alert alert-info" role="alert">
+                                    <h4 class="alert-heading">点击上面的“开始计算”并等待计算完毕后查看</h4>
+                                </div>
+                            </div>
+
+                            <div class="col-12" v-if="programs.length>0">
+                                <div class="alert alert-info mb-0" role="alert">
+                                    <div>计算完成<span v-if="workerUseTime!=='-'">，本次计算总耗时：{{workerUseTime}}</span></div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4 mt-4" v-for="program in programs">
+                                <div class="card border-info">
+                                    <table class="table table-sm mb-0">
+                                        <thead>
+                                        <tr>
+                                            <th class="text-center">在线</th>
+                                            <th class="text-center" colspan="3">{{program.addition.online}}/秒</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-center">离线</th>
+                                            <th class="text-center" colspan="3">{{program.addition.offline}}/秒</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-center">供货</th>
+                                            <th class="text-center" colspan="3">{{program.addition.supply}}%</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-center">建筑</th>
+                                            <th class="text-center">在线</th>
+                                            <th class="text-center">离线</th>
+                                            <th class="text-center">目标</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="building in program.addition.buildings" :class="buildingClass(building.building)">
+                                            <td class="text-nowrap text-center" v-b-tooltip.hover.html.v-info :title="building.building.tooltip"><span v-if="building.building.use" class="calculator-building-use"><i class="fa fa-home"></i></span>{{building.building.BuildingName}}</td>
+                                            <td class="text-center" v-b-tooltip.hover.html.v-info :title="building.onlineTooltip">{{building.online}}/秒</td>
+                                            <td class="text-center" v-b-tooltip.hover.html.v-info :title="building.offlineTooltip">{{building.offline}}/秒</td>
+                                            <td class="text-center" v-b-tooltip.hover.html.v-info :title="building.tooltip">{{building.toLevel}}</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{program.title.join("；")}}</h5>
+                                        <p class="card-text" v-if="program.addition.useMoney!==0">
+                                            <span>该组合和当前buff下，将所有建筑升级到目标等级后，总在线收入将达到{{program.addition.toTps}}/秒，总共需要花费金币{{program.addition.useMoney}}</span>
+                                            <span v-if="program.addition.needTime!==0">，升级到目标收入预计需要{{program.addition.needTime}}至{{program.addition.maxNeedTime}}的时间</span>
+                                        </p>
+                                        <div>
+                                            <button type="button" @click="selectProgram(program.addition.buildings)" class="btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="将本方案的建筑之外的所有建筑禁用">应用方案</button>
+                                            <button type="button" @click="syncProgramLevel(program.addition.buildings)" class="btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="将本方案的推荐等级同步到设置中" v-if="program.addition.useMoney!==0">同步等级</button>
+                                            <button type="button" @click="showRoute(program.addition.route)" class="btn btn-primary btn-sm" v-b-tooltip.hover.v-info title="查看推荐升级方案路线" v-if="program.addition.route.length>0">升级路线</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

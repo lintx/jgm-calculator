@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>家国梦任务查询</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <link href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.staticfile.org/font-awesome/5.11.2/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+    <nav class="navbar navbar-dark bg-info navbar-expand-md">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">家国梦工具集</span>
+
+            <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+
+            <b-collapse id="nav-collapse" is-nav>
+                <div class="navbar-nav">
+                    <a class="nav-item nav-link active" href="quest.html">任务查询</a>
+                    <a class="nav-item nav-link" href="index.html">计算器</a>
+                </div>
+                <div class="navbar-nav ml-auto">
+                    <a class="nav-item nav-link" href="https://github.com/lintx/jgm-calculator" target="_blank">Github</a>
+                </div>
+            </b-collapse>
+        </div>
+    </nav>
+    <div class="container">
+        <h1 class="bd-title" id="content">家国梦任务查询 <small>v{{version}}</small></h1>
+        <div no-body class="card">
+            <header header-tag="header" class="card-header" role="tab">筛选</header>
+            <div class="collapse show">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="mb-3 col-12 col-sm-6 col-md-6 col-lg-6 col-xl-3">
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">阶段</span>
+                                </div>
+                                <input @focus="$event.target.select()" type="text" class="form-control" v-model.number="filter.stepStart" placeholder="阶段（数字）">
+                                <div class="input-group-prepend input-group-append">
+                                    <span class="input-group-text">到</span>
+                                </div>
+                                <input @focus="$event.target.select()" type="text" class="form-control" v-model.number="filter.stepStop" placeholder="阶段（数字）">
+                            </div>
+                        </div>
+
+                        <div class="mb-3 col-12 col-sm-6 col-md-6 col-lg-6 col-xl-3">
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text">阶段名:</label>
+                                </div>
+                                <input @focus="$event.target.select()" type="text" class="form-control" v-model="filter.name" placeholder="阶段名">
+                            </div>
+                        </div>
+
+                        <div class="mb-3 col-12 col-sm-6 col-md-6 col-lg-6 col-xl-3">
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text">建筑名:</label>
+                                </div>
+                                <input @focus="$event.target.select()" type="text" class="form-control" v-model="filter.building" placeholder="建筑名">
+                            </div>
+                        </div>
+
+                        <div class="mb-3 col-12 col-sm-6 col-md-6 col-lg-6 col-xl-3">
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text">buff值:</label>
+                                </div>
+                                <select v-model="filter.buffComparison" class="custom-select">
+                                    <option value=">=">大于等于</option>
+                                    <option value="=">等于</option>
+                                    <option value="<=">小于等于</option>
+                                </select>
+                                <input @focus="$event.target.select()" type="text" class="form-control" v-model.number="filter.buffValue" placeholder="buff值">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4 mt-4" v-for="(quest,step) in filterQuests">
+                <div class="card border-info">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {{step}}.{{quest.name}}
+                            <br />
+                            <small>
+                                {{quest.desc}}
+                            </small>
+                        </h5>
+
+                        <div class="mb-2">
+                            <div>升级到下一级条件：</div>
+                            <div>{{quest.needMoney}}金币</div>
+                            <div v-if="quest.needContribution>0">{{quest.needContribution}}贡献</div>
+                        </div>
+                        <div class="mb-2">
+                            <div>奖励：</div>
+                            <div v-if="quest.chest2>0">多福红包x{{quest.chest2}}</div>
+                            <div v-if="quest.chest3>0">满福红包x{{quest.chest3}}</div>
+                            <div v-if="quest.awardPolicy>0">政策点x{{quest.awardPolicy}}</div>
+                            <div v-if="quest.awardContribution>0">贡献x{{quest.awardContribution}}</div>
+                        </div>
+                        <div>
+                            <div>可能的状态：</div>
+                            <div v-for="(buffs,index) in quest.buffs">
+                                {{index}}.<span v-for="buff in buffs" :class="{
+                                'badge-info':filter.building!=='' && buff.name.indexOf(filter.building)>=0,
+                                'badge-success':filter.buffValue>0 && (filter.buffComparison==='>=' && buff.buff>=filter.buffValue || filter.buffComparison==='=' && buff.buff===filter.buffValue || filter.buffComparison==='<=' && buff.buff<=filter.buffValue)
+                                }" class="mr-1">{{buff.name}}:{{buff.buff}}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js" type="javascript"></script>
+</body>
+</html>

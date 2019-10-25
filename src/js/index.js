@@ -45,7 +45,7 @@ import {getValidLevel} from "./Utils";
 
 let storage_key = "lintx-jgm-calculator-config";
 let worker = undefined;
-let version = "0.24";
+let version = "0.25";
 
 Vue.use(BootstrapVue);
 Vue.use(PortalVue);
@@ -238,8 +238,18 @@ let app = new Vue({
             if (config.hasOwnProperty("config")){
                 Object.assign(data.config, config.config);
             }
-            if (config.hasOwnProperty("policy")){
-                Object.assign(data.policy,config.policy);
+            if (config.hasOwnProperty("policy") && typeof config.policy==="object"){
+                data.policy.step = config.policy.step;
+                data.policy.levels = getPolicyLevelData(data.policy.step);
+                if (config.policy.hasOwnProperty("levels") && Array.isArray(config.policy.levels)){
+                    data.policy.levels.forEach(l=>{
+                        config.policy.levels.forEach(ll=>{
+                            if (ll.title===l.title){
+                                l.level = ll.level;
+                            }
+                        });
+                    });
+                }
             }
             if (config.hasOwnProperty("buildingProgram")){
                 Object.assign(data.buildingProgram,config.buildingProgram);

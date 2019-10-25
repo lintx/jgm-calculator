@@ -226,6 +226,26 @@ module.exports = function (env, argv) {
         //这个html文件中插入的chunks，3.x版本的插件不能处理common chunk，4.x版本可以自动处理
         chunks: ["index"]
     }));
+    webpackConfig.entry["quest"] = "./src/js/quest.js";
+    webpackConfig.plugins.push(new HtmlWebpackPlugin({
+        //输出文件名
+        filename: "quest.html",
+
+        //模板文件（源文件）
+        template: "./src/quest.html",
+
+        //插入的内容在哪里（true|'head'|'body'|false）
+        inject: true,
+
+        //是否闭合link标签(xhtml标准)
+        xhtml: true,
+
+        //在插入的js、css标签后面加上hash
+        hash: true,
+
+        //这个html文件中插入的chunks，3.x版本的插件不能处理common chunk，4.x版本可以自动处理
+        chunks: ["quest"]
+    }));
 
     return webpackConfig;
 };
