@@ -30,7 +30,7 @@
     </nav>
     <div class="container">
         <h1 class="bd-title" id="content">家国梦任务查询 <small>v{{version}}</small></h1>
-        <div no-body class="card">
+        <div no-body class="card mb-4">
             <header header-tag="header" class="card-header" role="tab">筛选</header>
             <div class="collapse show">
                 <div class="card-body">
@@ -83,6 +83,25 @@
                 </div>
             </div>
         </div>
+
+        
+        <div no-body class="card mb-4">
+            <header header-tag="header" class="card-header" role="tab">操作</header>
+            <div class="collapse show">
+                <div class="card-body">
+                    <h5>计算{{ filter.stepStart }} ~ {{ filter.stepStop }} 任务所获得的奖励</h5>
+                    <div v-if="questsReward.chest2>0">多福红包x{{ questsReward.chest2 }}</div>
+                    <div v-if="questsReward.chest3>0">满福红包x{{ questsReward.chest3 }}</div>
+                    <div v-if="questsReward.awardPolicy>0">政策点x{{ questsReward.awardPolicy }}</div>
+                    <div v-if="questsReward.awardContribution>0">贡献x{{ questsReward.awardContribution }}</div>
+                    <div v-if="questsReward.needMoney">所需金币：{{ questsReward.needMoney }}</div>
+                    <div class="mt-4">
+                        <button type="button" @click="getAllQuestsReward" class="btn btn-success btn-lg">计算奖励</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="row mb-4">
             <div class="col-12 col-sm-12 col-md-8 col-lg-6 col-xl-4 mt-4" v-for="(quest,step) in filterQuests">
                 <div class="card border-info">
@@ -97,7 +116,7 @@
 
                         <div class="mb-2">
                             <div>任务完成条件：</div>
-                            <div>{{quest.needMoney}}金币</div>
+                            <div>{{quest.renderMoney}}金币</div>
                             <div v-if="quest.needContribution>0">{{quest.needContribution}}贡献</div>
                         </div>
                         <div class="mb-2">
