@@ -1008,7 +1008,7 @@ let questsData = {
 Object.keys(questsData).forEach(key=>{
     let index = Number(key);
     let quest = questsData[key];
-    quest.needMoney = renderSize(quest.needMoney);
+    quest.renderMoney = renderSize(quest.needMoney);
     quests.forEach(q=>{
         if (quest.name===q.name){
             if (index<=3){
